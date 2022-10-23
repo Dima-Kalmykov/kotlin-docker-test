@@ -1,5 +1,6 @@
 package com.example.kotlindockertest
 
+import org.springframework.boot.Banner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
@@ -7,5 +8,7 @@ import org.springframework.boot.runApplication
 class KotlinDockerTestApplication
 
 fun main(args: Array<String>) {
-    runApplication<KotlinDockerTestApplication>(*args)
+    runApplication<KotlinDockerTestApplication>(*args) {
+        setBannerMode(Banner.Mode.OFF)
+    }
 }

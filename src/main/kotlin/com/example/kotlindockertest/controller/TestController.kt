@@ -7,5 +7,9 @@ import org.springframework.web.bind.annotation.RestController
 class TestController {
 
     @GetMapping("/hello")
-    fun hello() = "Hello, world!"
+    fun hello(): String {
+        println("hello")
+        val a = 2
+        return "23"
+    }
 }
