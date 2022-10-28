@@ -9,7 +9,7 @@ class TestController {
     @GetMapping("/hello")
     fun hello(): String {
         println("hello")
-        val a = 2
+        val a = 25
         return "23"
     }
 
