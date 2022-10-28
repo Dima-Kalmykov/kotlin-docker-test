@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: set up JDK 17
+      - name: install JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: deploy
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@dce9d565de8d876c11d93fa4fe677c0285a66d78
         env:
           LATEST_VERSION: ${{ github.run_number }}
           IMAGE_NAME: cteklo/kotlin-docker
