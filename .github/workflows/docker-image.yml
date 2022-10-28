@@ -30,3 +30,11 @@ jobs:
           dockerfile: Dockerfile
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: deploy
+          uses: appleboy/ssh-action@master
+          with:
+            host: 149.154.64.151
+            username: ${{ secrets.USERNAME }}
+            password: ${{ secrets.PASSWORD }}
+            script: echo 123
