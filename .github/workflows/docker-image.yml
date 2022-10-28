@@ -35,12 +35,12 @@ jobs:
         uses: appleboy/ssh-action@master
         env:
           LATEST_VERSION: ${{ github.run_number }}
+          IMAGE_NAME: cteklo/kotlin-docker
         with:
           host: 149.154.64.151
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs: LATEST_VERSION
+          envs: LATEST_VERSION, IMAGE_NAME
           script: |
-            echo ::set-env name=PREVIOUS_VERSION::$(($LATEST_VERSION-1))
-            docker rm $(docker stop $(docker ps -a -q --filter ancestor=cteklo/kotlin-docker:$PREVIOUS_VERSION --format="{{.ID}}"))
-            docker run -d -p 5005:5005 -p 8081:8081 cteklo/kotlin-docker:$LATEST_VERSION 
+            docker ps | grep $IMAGE_NAME | awk '{ print $1 }' | xargs docker stop
+            docker run -d -p 5005:5005 -p 8081:8081 $IMAGE_NAME:$LATEST_VERSION 
