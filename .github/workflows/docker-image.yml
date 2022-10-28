@@ -34,12 +34,13 @@ jobs:
       - name: deploy
         uses: appleboy/ssh-action@master
         env:
-          NUM: ${{ github.run_number }}
+          LATEST_VERSION: ${{ github.run_number }}
         with:
           host: 149.154.64.151
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs: NUM
+          envs: LATEST_VERSION
           script: |
-            echo $NUM
-            docker run -d -p 5005:5005 -p 8081:8081 cteklo/kotlin-docker:$NUM 
+            echo ::set-env name=PREVIOUS_VERSION::$(($LATEST_VERSION-1))
+            docker rm $(docker stop $(docker ps -a -q --filter ancestor=cteklo/kotlin-docker:$PREVIOUS_VERSION --format="{{.ID}}"))
+            docker run -d -p 5005:5005 -p 8081:8081 cteklo/kotlin-docker:$LATEST_VERSION 
