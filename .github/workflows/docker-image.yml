@@ -33,8 +33,13 @@ jobs:
 
       - name: deploy
         uses: appleboy/ssh-action@master
+        env:
+          NUM: ${{ github.run_number }}
         with:
           host: 149.154.64.151
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          script: echo 123
+          envs: NUM
+          script: |
+            echo $NUM
+            docker run -d -p 5005:5005 -p 8081:8081 cteklo/kotlin-docker:$NUM 

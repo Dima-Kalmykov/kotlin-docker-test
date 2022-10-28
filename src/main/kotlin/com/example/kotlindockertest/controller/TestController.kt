@@ -12,4 +12,11 @@ class TestController {
         val a = 2
         return "23"
     }
+
+    @GetMapping("/test")
+    fun test(): String {
+        println("test")
+        val a = 2
+        return "123"
+    }
 }
