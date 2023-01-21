@@ -1,5 +1,6 @@
 package com.example.kotlindockertest.controller.advice
 
+import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.model.StringErrorResponse
 import org.postgresql.util.PSQLException
 import org.springframework.http.HttpStatus
@@ -27,5 +28,15 @@ class ExceptionHandler {
         }
 
         return ResponseEntity(StringErrorResponse(errorMessage), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+
+    @ExceptionHandler(NotFoundException::class)
+    fun handleMockNotFoundException(ex: NotFoundException): ResponseEntity<StringErrorResponse> {
+        val errorMessage = requireNotNull(ex.message) { "Error message can't be null" }
+
+        return ResponseEntity(
+            StringErrorResponse(errorMessage),
+            HttpStatus.NOT_FOUND,
+        )
     }
 }

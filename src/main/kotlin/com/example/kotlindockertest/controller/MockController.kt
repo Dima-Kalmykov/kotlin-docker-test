@@ -1,5 +1,7 @@
 package com.example.kotlindockertest.controller
 
+import com.example.kotlindockertest.configuration.annotation.MockNotFoundApiResponse
+import com.example.kotlindockertest.configuration.annotation.SuccessfulApiResponse
 import com.example.kotlindockertest.model.StringIdResponse
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.service.MockService
@@ -10,9 +12,9 @@ import org.springframework.web.bind.annotation.*
 class MockController(private val mockService: MockService) {
 
     @GetMapping("/{id}")
-    fun getMock(@PathVariable id: Long): MockDto {
-        return mockService.getMock(id)
-    }
+    @SuccessfulApiResponse
+    @MockNotFoundApiResponse
+    fun getMock(@PathVariable id: Long) = mockService.getMock(id)
 
     @PostMapping("/")
     fun addMock(@RequestBody mock: MockDto): StringIdResponse {
@@ -22,17 +24,15 @@ class MockController(private val mockService: MockService) {
     }
 
     @PutMapping("/{id}")
-    fun patchMock(
-        @PathVariable id: Long,
-        @RequestBody mock: MockDto,
-    ): MockDto {
-        return mockService.patchMock(id, mock)
-    }
+    @SuccessfulApiResponse
+    @MockNotFoundApiResponse
+    fun patchMock(@PathVariable id: Long, @RequestBody mock: MockDto) =
+        mockService.patchMock(id, mock)
 
     @DeleteMapping("/{id}")
-    fun deleteMock(@PathVariable id: Long): Long {
+    fun deleteMock(@PathVariable id: Long): StringIdResponse {
         mockService.deleteMock(id)
 
-        return id
+        return StringIdResponse(id)
     }
 }

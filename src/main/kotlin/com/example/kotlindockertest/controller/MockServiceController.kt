@@ -4,7 +4,6 @@ import com.example.kotlindockertest.model.StringIdResponse
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.mock.MockShortInfoDto
 import com.example.kotlindockertest.model.service.MockServiceDto
-import com.example.kotlindockertest.model.service.MockServiceShortInfoDto
 import com.example.kotlindockertest.service.MockService
 import com.example.kotlindockertest.service.MockServiceHandler
 import org.springframework.web.bind.annotation.*
@@ -17,12 +16,12 @@ class MockServiceController(
 ) {
 
     @GetMapping("/")
-    fun getServices(): List<MockServiceShortInfoDto> {
-        return mockServiceHandler.getServices()
-    }
+    fun getServices() = mockServiceHandler.getServices()
 
     @GetMapping("/{id}/mocks")
-    fun getMocks(@PathVariable id: Long): List<MockShortInfoDto> {
+    fun getMocks(
+        @PathVariable id: Long,
+    ): List<MockShortInfoDto> {
         return mockService.getMocks(id)
     }
 
@@ -52,7 +51,9 @@ class MockServiceController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteService(@PathVariable id: Long) {
+    fun deleteService(@PathVariable id: Long): StringIdResponse {
         mockServiceHandler.deleteService(id)
+
+        return StringIdResponse(id)
     }
 }

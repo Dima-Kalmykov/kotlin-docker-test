@@ -1,4 +1,4 @@
-package com.example.kotlindockertest.configuration
+package com.example.kotlindockertest.configuration.web
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.cors.CorsConfiguration
