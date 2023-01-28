@@ -1,5 +1,6 @@
 package com.example.kotlindockertest
 
+import com.example.kotlindockertest.service.TriggerPathTokenizer
 import com.example.kotlindockertest.test.FieldSearcher
 import com.example.kotlindockertest.test.GraphQLRequestParser
 import com.fasterxml.jackson.databind.JsonNode
@@ -26,9 +27,22 @@ class KotlinDockerTestApplicationTests {
         println(raw)
         val document = parser.parseDocument(str)
         println(document)
-//        val field = fieldSearcher.getField(document, "Super")
-//        println(field)
+        val field = fieldSearcher.getField(document, "query") ?: error("")
+        val nested = fieldSearcher.getNestedField(field, "book")
+        println(nested)
 //        println(document.findField("adam"))
+    }
+
+    @Autowired
+    lateinit var tokenizer: TriggerPathTokenizer
+
+    @Test
+    fun testTokenizer() {
+        val path = "['123'][0]['hello'][0]"
+        val result = tokenizer.tokenize(path)
+        result.forEach {
+            println(it)
+        }
     }
 
 

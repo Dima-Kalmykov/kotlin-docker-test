@@ -1,11 +1,13 @@
 package com.example.kotlindockertest.controller
 
+import com.example.kotlindockertest.configuration.annotation.NotFoundApiResponse
+import com.example.kotlindockertest.configuration.annotation.SuccessfulApiResponse
 import com.example.kotlindockertest.model.StringIdResponse
-import com.example.kotlindockertest.model.mock.MockDto
-import com.example.kotlindockertest.model.mock.MockShortInfoDto
 import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.service.MockService
 import com.example.kotlindockertest.service.MockServiceHandler
+import com.example.kotlindockertest.utils.MOCK_NOT_FOUND_DESCRIPTION
+import com.example.kotlindockertest.utils.SERVICE_NOT_FOUND_DESCRIPTION
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -19,21 +21,19 @@ class MockServiceController(
     fun getServices() = mockServiceHandler.getServices()
 
     @GetMapping("/{id}/mocks")
-    fun getMocks(
-        @PathVariable id: Long,
-    ): List<MockShortInfoDto> {
-        return mockService.getMocks(id)
-    }
+    fun getMocks(@PathVariable id: Long) = mockService.getMocks(id)
 
+    // Todo default mock doesn't exist
     @GetMapping("/{id}/mocks/default")
-    fun getDefaultMock(@PathVariable id: Long): MockDto {
-        return mockServiceHandler.getDefaultMock(id)
-    }
+    @SuccessfulApiResponse
+    @NotFoundApiResponse(description = MOCK_NOT_FOUND_DESCRIPTION)
+    @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)
+    fun getDefaultMock(@PathVariable id: Long) = mockServiceHandler.getDefaultMock(id)
 
     @GetMapping("/{id}")
-    fun getService(@PathVariable id: Long): MockServiceDto {
-        return mockServiceHandler.getService(id)
-    }
+    @SuccessfulApiResponse
+    @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)
+    fun getService(@PathVariable id: Long) = mockServiceHandler.getService(id)
 
     @PostMapping("/")
     fun addService(@RequestBody service: MockServiceDto): StringIdResponse {
@@ -43,12 +43,12 @@ class MockServiceController(
     }
 
     @PutMapping("/{id}")
+    @SuccessfulApiResponse
+    @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)
     fun patchService(
         @PathVariable id: Long,
         @RequestBody service: MockServiceDto,
-    ): MockServiceDto {
-        return mockServiceHandler.patchService(id, service)
-    }
+    ) = mockServiceHandler.patchService(id, service)
 
     @DeleteMapping("/{id}")
     fun deleteService(@PathVariable id: Long): StringIdResponse {

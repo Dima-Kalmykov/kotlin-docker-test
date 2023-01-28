@@ -23,10 +23,10 @@ class TestController(
     @PostMapping("/test")
     fun test2(@RequestBody body: JsonNode): Int {
         println("Got request with query ${body.toPrettyString()}")
-        val parseRequest = queryParser.parseRequest(body.get("value1"))
-        println(parseRequest)
-        val parseDocument = Parser().parseDocument(parseRequest)
-        println(parseDocument)
+//        val parseRequest = queryParser.parseRequest(body.get("value1"))
+//        println(parseRequest)
+//        val parseDocument = Parser().parseDocument(parseRequest)
+//        println(parseDocument)
         return 123
     }
 
@@ -42,7 +42,7 @@ class TestController(
         allRequestParams.forEach { (key, value) ->
             changed = changed.replace("__${key}__", value)
         }
-        println(changed.length)
+        println(changed)
         val document = parser.parseDocument(queryParser.parseRequest(query))
         println(document)
         println(document.toString().length)

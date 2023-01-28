@@ -12,7 +12,6 @@ class MockService(private val mockRepository: MockRepository) {
     @Transactional(readOnly = true)
     fun getMocks(serviceId: Long) = mockRepository.getMocks(serviceId)
 
-
     @Transactional(readOnly = true)
     fun getMock(id: Long): MockDto = mockRepository.findById(id).orElseThrow {
         throw MockNotFoundException(id)

@@ -8,11 +8,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 
 @ApiResponse(
     responseCode = NOT_FOUND_STATUS_CODE,
-    description = "Can't find mock with given id",
     content = [
         Content(
             schema = Schema(implementation = StringErrorResponse::class),
         ),
     ],
 )
-annotation class MockNotFoundApiResponse
+@Repeatable
+annotation class NotFoundApiResponse(val description: String)

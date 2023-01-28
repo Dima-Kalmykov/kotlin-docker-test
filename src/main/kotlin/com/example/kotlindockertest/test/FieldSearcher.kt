@@ -18,6 +18,10 @@ class FieldSearcher {
         return null
     }
 
+    fun getNestedField(field: Field, nestedFieldName: String): Field? {
+        return field.selectionSet.selections.find { (it as Field).name == nestedFieldName } as Field
+    }
+
 
     fun findField(document: Document, fieldName: String): Field? {
         document.definitions.forEach { definition ->

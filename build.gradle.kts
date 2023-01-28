@@ -35,3 +35,9 @@ dependencies {
     testImplementation(group = "org.junit.jupiter", name = "junit-jupiter-api", version = "5.9.1")
     testImplementation(group = "org.springframework.boot", name = "spring-boot-starter-test")
 }
+
+tasks {
+    test {
+        useJUnitPlatform()
+    }
+}

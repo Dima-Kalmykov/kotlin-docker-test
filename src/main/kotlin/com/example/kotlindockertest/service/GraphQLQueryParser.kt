@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service
 @Service
 class GraphQLQueryParser {
 
-    fun parseRequest(request: JsonNode) = request
+    fun parseRequest(request: JsonNode) = request.get("query")
         .toString()
-        .replace("\\n", "")
+        .replace("\\r\\n", "")
+        .replace("\"", "")
+        .replace("\\", "")
         .trim('"')
 }
