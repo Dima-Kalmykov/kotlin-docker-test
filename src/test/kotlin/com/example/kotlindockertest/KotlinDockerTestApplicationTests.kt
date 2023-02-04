@@ -1,8 +1,10 @@
 package com.example.kotlindockertest
 
+import com.example.kotlindockertest.controller.QueryWrapper
+import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.service.TriggerPathTokenizer
-import com.example.kotlindockertest.test.FieldSearcher
-import com.example.kotlindockertest.test.GraphQLRequestParser
+import com.example.kotlindockertest.service.FieldSearcher
+import com.example.kotlindockertest.service.TriggerDocumentMatcher
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.language.*
@@ -18,18 +20,27 @@ class KotlinDockerTestApplicationTests {
 
     @Autowired lateinit var fieldSearcher: FieldSearcher
 
+    @Autowired lateinit var triggerDocumentMatcher: TriggerDocumentMatcher
+
     @Test
     fun contextLoads() {
+
         val parser = Parser()
         val json = ObjectMapper().createObjectNode()
-        val raw = "{\n  query {\n    book\n  }\n}".replace("\n", "")
+        val raw = "{  query}".replace("\n", "")
+//        val raw = "{\n  query {\n    book\n  }\n}".replace("\n", "")
         val str = raw
         println(raw)
         val document = parser.parseDocument(str)
         println(document)
-        val field = fieldSearcher.getField(document, "query") ?: error("")
-        val nested = fieldSearcher.getNestedField(field, "book")
-        println(nested)
+        val path = "['query']"
+//        val value =
+//        val trigger = TriggerDto(123, "", path, 1, Ope )
+//        val match = triggerDocumentMatcher.match(document, "['query']")
+//        println(match)
+//        val field = fieldSearcher.getField(document, "query") ?: error("")
+//        val nested = fieldSearcher.getNestedField(field, "book")
+//        println(nested)
 //        println(document.findField("adam"))
     }
 
@@ -43,6 +54,13 @@ class KotlinDockerTestApplicationTests {
         result.forEach {
             println(it)
         }
+    }
+
+    @Test
+    fun test23() {
+        val query = QueryWrapper("321")
+        val writeValueAsString = ObjectMapper().writeValueAsString(query)
+        println(writeValueAsString)
     }
 
 

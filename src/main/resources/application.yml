@@ -10,7 +10,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
   jpa:
     hibernate:
-      ddl-auto: create # TODO make none
+      ddl-auto: update # TODO make none
     show-sql: true
     properties:
       hibernate:

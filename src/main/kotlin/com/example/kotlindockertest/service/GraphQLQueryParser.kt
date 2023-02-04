@@ -11,5 +11,6 @@ class GraphQLQueryParser {
         .replace("\\r\\n", "")
         .replace("\"", "")
         .replace("\\", "")
+        .replace(" ", "")
         .trim('"')
 }

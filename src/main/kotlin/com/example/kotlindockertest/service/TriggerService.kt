@@ -32,6 +32,10 @@ class TriggerService(private val triggerRepository: TriggerRepository) {
     fun patchTrigger(id: Long, trigger: TriggerDto): TriggerDto {
         val updatedTrigger = getTrigger(id).apply {
             this.path = trigger.path
+            this.response = trigger.response
+            this.operation = trigger.operation
+            this.valueType = trigger.valueType
+            this.value = trigger.value
         }
 
         return updatedTrigger

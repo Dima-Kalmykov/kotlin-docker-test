@@ -13,8 +13,8 @@ open class MockServiceDto(
     open var name: String,
     open var host: String,
     open var ttl: Long,
-    open var delay: Long = 0,
-    open var location: String? = null,
+    open var delay: Long? = null,
+    open var location: String? = null, // Todo must start with /
     open var makeRealCall: Boolean? = null,
     open var defaultMockId: Long? = null,
 )

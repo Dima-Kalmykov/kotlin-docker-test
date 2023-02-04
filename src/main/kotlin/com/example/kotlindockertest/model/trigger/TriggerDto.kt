@@ -1,5 +1,7 @@
 package com.example.kotlindockertest.model.trigger
 
+import com.example.kotlindockertest.model.OperationType
+import com.example.kotlindockertest.model.ValueType
 import javax.persistence.*
 
 
@@ -10,6 +12,18 @@ open class TriggerDto(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open var id: Long,
 
+    @Lob
+    open var response: String,
+
     open var path: String,
+
+    // Todo add index
     open var mockId: Long,
+
+    @Enumerated(EnumType.STRING)
+    open var operation: OperationType,
+
+    @Enumerated(EnumType.STRING)
+    open var valueType: ValueType,
+    open var value: String,
 )

@@ -5,6 +5,7 @@ import com.example.kotlindockertest.model.mock.MockShortInfoDto
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
+import java.util.*
 
 interface MockRepository : CrudRepository<MockDto, Long> {
 
@@ -16,6 +17,8 @@ interface MockRepository : CrudRepository<MockDto, Long> {
         """
     )
     fun getMocks(serviceId: Long): List<MockShortInfoDto>
+
+    fun findByServiceIdAndRequestHash(serviceId: Long, requestHash: Int): Optional<MockDto>
 
     @Modifying
     @Query(

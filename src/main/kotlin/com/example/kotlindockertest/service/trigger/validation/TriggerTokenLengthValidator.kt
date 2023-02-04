@@ -10,11 +10,7 @@ import org.springframework.stereotype.Service
 class TriggerTokenLengthValidator : TriggerTokenValidator {
 
     override fun validate(path: String): ValidationData {
-        if (path.length < 3) {
-            return ValidationData.failed(FailedReason.INVALID_TOKEN_LENGTH)
-        }
-
-        if (path[1] == '\'' && path.length < 5) {
+        if (path.length < 5) {
             return ValidationData.failed(FailedReason.INVALID_TOKEN_LENGTH)
         }
 

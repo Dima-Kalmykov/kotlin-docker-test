@@ -11,10 +11,7 @@ class LoggingInterceptor : HandlerInterceptor {
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         logger.info {
-            """${"\n"}
-                Method: ${request.method}
-                URL: ${request.requestURL}
-            """.trimIndent()
+            "\nNew request: ${request.method} ${request.requestURL}"
         }
 
         return true

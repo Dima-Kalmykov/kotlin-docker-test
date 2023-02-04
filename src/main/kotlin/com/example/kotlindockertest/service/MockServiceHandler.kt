@@ -1,6 +1,7 @@
 package com.example.kotlindockertest.service
 
 import com.example.kotlindockertest.exception.MockNotFoundException
+import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.exception.ServiceNotFoundException
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.service.MockServiceDto
@@ -30,6 +31,10 @@ class MockServiceHandler(
             throw MockNotFoundException(mockId)
         }
     }
+
+    @Transactional(readOnly = true)
+    fun getServiceByName(name: String): MockServiceDto = mockServiceRepository.findByName(name)
+        .orElseThrow { throw NotFoundException("Service with name $name doesn't exist") }
 
     @Transactional(readOnly = true)
     fun getService(id: Long): MockServiceDto = mockServiceRepository.findById(id).orElseThrow {

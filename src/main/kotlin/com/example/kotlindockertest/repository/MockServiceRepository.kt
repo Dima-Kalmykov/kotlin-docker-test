@@ -4,6 +4,7 @@ import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.model.service.MockServiceShortInfoDto
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
+import java.util.Optional
 
 interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
 
@@ -14,4 +15,6 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
         """
     )
     fun getServices(): List<MockServiceShortInfoDto>
+
+    fun findByName(name: String): Optional<MockServiceDto>
 }

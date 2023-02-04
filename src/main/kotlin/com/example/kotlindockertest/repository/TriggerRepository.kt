@@ -8,7 +8,7 @@ interface TriggerRepository : CrudRepository<TriggerDto, Long> {
 
     @Query(
         """
-        SELECT new com.example.kotlindockertest.model.trigger.TriggerDto(t.id, t.path, t.mockId) 
+        SELECT new com.example.kotlindockertest.model.trigger.TriggerDto(t.id, t.response, t.path, t.mockId, t.operation, t.valueType, t.value) 
         FROM TriggerDto t
         WHERE t.mockId = ?1
         """

@@ -1,6 +1,9 @@
 package com.example.kotlindockertest.test
 
+import com.example.kotlindockertest.model.trigger.TriggerDto
+import com.example.kotlindockertest.service.FieldSearcher
 import com.example.kotlindockertest.service.GraphQLQueryParser
+import com.example.kotlindockertest.service.TriggerDocumentMatcher
 import com.fasterxml.jackson.databind.JsonNode
 import graphql.language.*
 import graphql.parser.Parser
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 class TestController(
     private val fieldSearcher: FieldSearcher,
     private val queryParser: GraphQLQueryParser,
+    private val triggerDocumentMatcher: TriggerDocumentMatcher,
 ) {
 
     companion object : Thread()
@@ -30,27 +34,44 @@ class TestController(
         return 123
     }
 
+    @GetMapping("/gr")
+    fun tt(
+        @RequestParam allRequestParams: Map<String, String>,
+    ) {
+        allRequestParams.forEach { (k, v) ->
+            println("[$k: $v]")
+        }
+    }
+
     @GetMapping("/")
     fun test(
+        @RequestParam allRequestParams: Map<String, String>,
+        @RequestBody query: TriggerDto,
+    ): Boolean {
+        val query2 = "{    test {        book(id: 0.1)    }}"
+        val parser = Parser()
+        println(query2)
+        val document = parser.parseDocument(query2)
+        println(document)
+
+
+        return triggerDocumentMatcher.match(document, query)
+    }
+
+    @PostMapping("/g")
+    fun test2(
         @RequestParam allRequestParams: Map<String, String>,
         @RequestBody query: JsonNode,
     ): String {
         val parser = Parser()
-        println(query.toPrettyString())
+        println(query.toString())
         val parsed = queryParser.parseRequest(query)
-        var changed = parsed
-        allRequestParams.forEach { (key, value) ->
-            changed = changed.replace("__${key}__", value)
-        }
-        println(changed)
-        val document = parser.parseDocument(queryParser.parseRequest(query))
+        println(parsed)
+        val document = parser.parseDocument(parsed)
         println(document)
-        println(document.toString().length)
-        println(document.toString())
-        val foundField = fieldSearcher.findField(document, "dima")
 
-        println("Found field $foundField")
 
         return "Ok"
+//        return triggerDocumentMatcher.match(document, query)
     }
 }
