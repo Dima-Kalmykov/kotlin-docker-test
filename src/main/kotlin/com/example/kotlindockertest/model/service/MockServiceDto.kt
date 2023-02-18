@@ -1,5 +1,8 @@
 package com.example.kotlindockertest.model.service
 
+import java.time.DateTimeException
+import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
@@ -12,7 +15,9 @@ open class MockServiceDto(
     @Column(unique = true)
     open var name: String,
     open var host: String,
+    @Transient
     open var ttl: Long,
+    open var ttlDateTime: LocalDateTime? = null,
     open var delay: Long? = null,
     open var location: String? = null, // Todo must start with /
     open var makeRealCall: Boolean? = null,

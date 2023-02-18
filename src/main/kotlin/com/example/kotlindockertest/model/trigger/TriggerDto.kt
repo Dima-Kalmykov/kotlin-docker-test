@@ -26,4 +26,5 @@ open class TriggerDto(
     @Enumerated(EnumType.STRING)
     open var valueType: ValueType,
     open var value: String,
+    open var enable: Boolean = true,
 )

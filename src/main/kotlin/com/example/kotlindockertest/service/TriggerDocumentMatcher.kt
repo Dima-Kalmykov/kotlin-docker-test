@@ -12,7 +12,6 @@ class TriggerDocumentMatcher(
     private val triggerValueMatcher: TriggerValueMatcher,
 ) {
 
-    // Todo может надо добавить requestCount триггер
     fun match(document: Document, trigger: TriggerDto): Boolean {
         val tokens = triggerPathTokenizer.tokenize(trigger.path)
         var currentField: Field? = null

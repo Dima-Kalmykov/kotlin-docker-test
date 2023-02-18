@@ -7,6 +7,8 @@ import com.example.kotlindockertest.service.FieldSearcher
 import com.example.kotlindockertest.service.TriggerDocumentMatcher
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.IntNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import graphql.language.*
 import graphql.parser.Parser
 import org.junit.jupiter.api.Test
@@ -22,26 +24,21 @@ class KotlinDockerTestApplicationTests {
 
     @Autowired lateinit var triggerDocumentMatcher: TriggerDocumentMatcher
 
+
+    data class Address(val street: Long)
+    data class Person(val name: String, val address: Address)
     @Test
     fun contextLoads() {
+        val mapper = ObjectMapper()
+        val person = Person("Dima", Address(222))
+        val jsonNode = mapper.readTree(mapper.writeValueAsString(person))
 
-        val parser = Parser()
-        val json = ObjectMapper().createObjectNode()
-        val raw = "{  query}".replace("\n", "")
-//        val raw = "{\n  query {\n    book\n  }\n}".replace("\n", "")
-        val str = raw
-        println(raw)
-        val document = parser.parseDocument(str)
-        println(document)
-        val path = "['query']"
-//        val value =
-//        val trigger = TriggerDto(123, "", path, 1, Ope )
-//        val match = triggerDocumentMatcher.match(document, "['query']")
-//        println(match)
-//        val field = fieldSearcher.getField(document, "query") ?: error("")
-//        val nested = fieldSearcher.getNestedField(field, "book")
-//        println(nested)
-//        println(document.findField("adam"))
+        val addressNode = jsonNode.get("address")
+
+        (addressNode as ObjectNode).set<IntNode>("street", IntNode(43))
+
+        println(addressNode.toPrettyString())
+        println(jsonNode.toPrettyString())
     }
 
     @Autowired

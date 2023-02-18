@@ -36,6 +36,7 @@ class TriggerService(private val triggerRepository: TriggerRepository) {
             this.operation = trigger.operation
             this.valueType = trigger.valueType
             this.value = trigger.value
+            this.enable = trigger.enable
         }
 
         return updatedTrigger

@@ -5,8 +5,10 @@ import com.example.kotlindockertest.service.FieldSearcher
 import com.example.kotlindockertest.service.GraphQLQueryParser
 import com.example.kotlindockertest.service.TriggerDocumentMatcher
 import com.fasterxml.jackson.databind.JsonNode
+import graphql.GraphQL
 import graphql.language.*
 import graphql.parser.Parser
+import graphql.schema.GraphQLSchema
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -51,6 +53,7 @@ class TestController(
         val query2 = "{    test {        book(id: 0.1)    }}"
         val parser = Parser()
         println(query2)
+
         val document = parser.parseDocument(query2)
         println(document)
 

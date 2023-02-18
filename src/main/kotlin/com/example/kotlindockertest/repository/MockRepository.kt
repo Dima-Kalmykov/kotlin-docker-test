@@ -28,4 +28,13 @@ interface MockRepository : CrudRepository<MockDto, Long> {
         """
     )
     fun deleteMocksByServiceId(serviceId: Long)
+
+    @Modifying
+    @Query(
+        """
+            DELETE FROM MockDto m
+            WHERE m.ttlDateTime < CURRENT_TIMESTAMP()
+        """
+    )
+    fun deleteMocksByTtl()
 }

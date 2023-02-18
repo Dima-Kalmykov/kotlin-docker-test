@@ -7,6 +7,7 @@ import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.repository.MockRepository
 import com.example.kotlindockertest.repository.MockServiceRepository
+import com.example.kotlindockertest.utils.toDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -43,6 +44,7 @@ class MockServiceHandler(
 
     @Transactional
     fun addService(service: MockServiceDto): Long {
+        service.ttlDateTime = service.ttl.toDateTime()
         val savedService = mockServiceRepository.save(service)
 
         return savedService.id
@@ -53,7 +55,7 @@ class MockServiceHandler(
         val updatedService = getService(id).apply {
             this.name = service.name
             this.host = service.host
-            this.ttl = service.ttl
+            this.ttlDateTime = service.ttl.toDateTime()
             this.location = service.location
             this.makeRealCall = service.makeRealCall
             this.defaultMockId = service.defaultMockId

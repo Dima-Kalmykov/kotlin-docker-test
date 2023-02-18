@@ -3,11 +3,17 @@ package com.example.kotlindockertest.service
 import com.example.kotlindockertest.exception.MockNotFoundException
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.repository.MockRepository
+import com.example.kotlindockertest.repository.TriggerRepository
+import com.example.kotlindockertest.utils.toDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
-class MockService(private val mockRepository: MockRepository) {
+class MockService(
+    private val mockRepository: MockRepository,
+    private val triggerRepository: TriggerRepository,
+) {
 
     @Transactional(readOnly = true)
     fun getMocks(serviceId: Long) = mockRepository.getMocks(serviceId)
@@ -23,6 +29,7 @@ class MockService(private val mockRepository: MockRepository) {
 
     @Transactional
     fun addMock(mock: MockDto): Long {
+        mock.ttlDateTime = mock.ttl.toDateTime()
         val savedMock = mockRepository.save(mock)
 
         return savedMock.id
@@ -32,10 +39,11 @@ class MockService(private val mockRepository: MockRepository) {
     fun patchMock(id: Long, mock: MockDto): MockDto {
         val updatedMock = getMock(id).apply {
             this.name = mock.name
-            this.ttl = mock.ttl
+            this.ttlDateTime = mock.ttl.toDateTime()
             this.request = mock.request
             this.response = mock.response
             this.delay = mock.delay
+            this.enable = mock.enable
         }
 
         return updatedMock
@@ -44,5 +52,6 @@ class MockService(private val mockRepository: MockRepository) {
     @Transactional
     fun deleteMock(id: Long) {
         mockRepository.deleteById(id)
+        triggerRepository.deleteTriggersByMockId(id)
     }
 }
