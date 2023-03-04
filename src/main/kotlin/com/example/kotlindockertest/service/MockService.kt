@@ -18,9 +18,17 @@ class MockService(
     @Transactional(readOnly = true)
     fun getMocks(serviceId: Long) = mockRepository.getMocks(serviceId)
 
+    // Todo проверить, что делает один нужный join
     @Transactional(readOnly = true)
     fun getMockByRequestHash(serviceId: Long, requestHash: Int): MockDto? =
         mockRepository.findByServiceIdAndRequestHash(serviceId, requestHash).orElse(null)
+
+    // Todo sort by service id
+    fun getMockByName(serviceId: Long, mockName: String): MockDto {
+        return mockRepository.findByServiceIdAndName(serviceId, mockName).orElseThrow {
+            error("") // todo
+        }
+    }
 
     @Transactional(readOnly = true)
     fun getMock(id: Long): MockDto = mockRepository.findById(id).orElseThrow {

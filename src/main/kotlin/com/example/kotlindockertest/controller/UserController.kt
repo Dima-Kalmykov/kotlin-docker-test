@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
@@ -15,14 +16,16 @@ import kotlin.system.measureTimeMillis
 @RestController
 class UserController(private val userService: UserService) {
 
-    @GetMapping("/{serviceName}")
+    @GetMapping("/mocker/{serviceName}/{mockName}")
     fun getMockedResponse(
         @PathVariable serviceName: String,
+        @PathVariable mockName: String,
+        @RequestParam(defaultValue = false.toString()) identicalComparison: Boolean,
         @RequestBody query: JsonNode,
     ): JsonNode? {
         var userResult: UserResult
         val time = measureTimeMillis {
-            userResult = userService.getResponse(serviceName, query)
+            userResult = userService.getResponse(serviceName, mockName, identicalComparison, query)
         }
 
         // Todo use coroutines

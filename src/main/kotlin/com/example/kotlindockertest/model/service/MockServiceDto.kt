@@ -21,5 +21,5 @@ open class MockServiceDto(
     open var delay: Long? = null,
     open var location: String? = null, // Todo must start with /
     open var makeRealCall: Boolean? = null,
-    open var defaultMockId: Long? = null,
+    open var useDefaultMock: Boolean? = null,
 )

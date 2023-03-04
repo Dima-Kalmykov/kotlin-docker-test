@@ -12,6 +12,7 @@ class MockCleaner(private val mockRepository: MockRepository) {
 
     companion object : KLogging()
 
+    // Todo сделать для сервисов
     @Transactional
     @Scheduled(timeUnit = TimeUnit.MINUTES, fixedDelay = 5)
     fun removeMocksByTtl() {

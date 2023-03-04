@@ -9,6 +9,7 @@ import graphql.GraphQL
 import graphql.language.*
 import graphql.parser.Parser
 import graphql.schema.GraphQLSchema
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -20,6 +21,7 @@ class TestController(
     private val fieldSearcher: FieldSearcher,
     private val queryParser: GraphQLQueryParser,
     private val triggerDocumentMatcher: TriggerDocumentMatcher,
+    private val factory: ConfigurableListableBeanFactory,
 ) {
 
     companion object : Thread()
@@ -39,7 +41,9 @@ class TestController(
     @GetMapping("/gr")
     fun tt(
         @RequestParam allRequestParams: Map<String, String>,
+        @RequestParam(defaultValue = "true") test: Boolean
     ) {
+        println(test)
         allRequestParams.forEach { (k, v) ->
             println("[$k: $v]")
         }
@@ -76,5 +80,10 @@ class TestController(
 
         return "Ok"
 //        return triggerDocumentMatcher.match(document, query)
+    }
+
+    @GetMapping("/foo")
+    fun foo() {
+        println("")
     }
 }

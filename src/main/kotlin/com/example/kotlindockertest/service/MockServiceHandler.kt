@@ -21,19 +21,6 @@ class MockServiceHandler(
     fun getServices() = mockServiceRepository.getServices()
 
     @Transactional(readOnly = true)
-    fun getDefaultMock(id: Long): MockDto {
-        val service = mockServiceRepository.findById(id).orElseThrow {
-            throw ServiceNotFoundException(id)
-        }
-
-        val mockId = service.defaultMockId ?: error("Service with id = $id doesn't contain default mock")
-
-        return mockRepository.findById(mockId).orElseThrow {
-            throw MockNotFoundException(mockId)
-        }
-    }
-
-    @Transactional(readOnly = true)
     fun getServiceByName(name: String): MockServiceDto = mockServiceRepository.findByName(name)
         .orElseThrow { throw NotFoundException("Service with name $name doesn't exist") }
 
@@ -58,8 +45,7 @@ class MockServiceHandler(
             this.ttlDateTime = service.ttl.toDateTime()
             this.location = service.location
             this.makeRealCall = service.makeRealCall
-            this.defaultMockId = service.defaultMockId
-            this.defaultMockId = service.delay
+            this.delay = service.delay
         }
 
         return updatedService

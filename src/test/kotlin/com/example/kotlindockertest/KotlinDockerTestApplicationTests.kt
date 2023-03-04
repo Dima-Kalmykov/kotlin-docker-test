@@ -2,9 +2,12 @@ package com.example.kotlindockertest
 
 import com.example.kotlindockertest.controller.QueryWrapper
 import com.example.kotlindockertest.model.trigger.TriggerDto
+import com.example.kotlindockertest.repository.TriggerRepository
 import com.example.kotlindockertest.service.TriggerPathTokenizer
 import com.example.kotlindockertest.service.FieldSearcher
 import com.example.kotlindockertest.service.TriggerDocumentMatcher
+import com.example.kotlindockertest.service.trigger.matcher.TriggerFloatMatcher
+import com.example.kotlindockertest.service.trigger.matcher.TriggerMatcher
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.IntNode
@@ -13,7 +16,9 @@ import graphql.language.*
 import graphql.parser.Parser
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.boot.test.context.SpringBootTest
+import kotlin.reflect.jvm.jvmName
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -23,6 +28,17 @@ class KotlinDockerTestApplicationTests {
     @Autowired lateinit var fieldSearcher: FieldSearcher
 
     @Autowired lateinit var triggerDocumentMatcher: TriggerDocumentMatcher
+
+    @Autowired lateinit var listableBeanFactory: ConfigurableListableBeanFactory
+    @Autowired lateinit var triggerFloatMatcher: TriggerMatcher
+    @Autowired lateinit var triggerRepository: TriggerRepository
+
+    @Test
+    fun test() {
+        val beanProxy = listableBeanFactory.getBean(TriggerFloatMatcher::class.java)
+        println(beanProxy::class.jvmName)
+        val a = 3
+    }
 
 
     data class Address(val street: Long)

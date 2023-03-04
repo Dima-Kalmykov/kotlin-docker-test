@@ -1,5 +1,6 @@
 package com.example.kotlindockertest.service
 
+import com.example.kotlindockertest.exception.MockNotFoundException
 import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.model.UserResult
 import com.example.kotlindockertest.model.mock.MockDto
@@ -24,34 +25,56 @@ class UserService(
 
     fun getResponse(
         serviceName: String,
+        mockName: String,
+        identicalComparison: Boolean,
         query: JsonNode,
     ): UserResult {
         val service = mockServiceHandler.getServiceByName(serviceName)
 
         val parsedQuery = graphQLQueryParser.parseRequest(query)
-        val mock = mockService.getMockByRequestHash(service.id, parsedQuery.hashCode())
 
-        val delay = getDelay(mock, service)
-        if (mock == null) {
-            return checkDefaultFlow(service, query, delay)
+        return if (identicalComparison) {
+            val mock = mockService.getMockByRequestHash(service.id, parsedQuery.hashCode())
+            val delay = getDelay(mock, service)
+            if (mock == null) {
+                checkDefaultFlow(service, query, delay)
+            } else {
+                UserResult(mock.response.toJson(), delay)
+            }
+        } else {
+            val mock = mockService.getMockByName(service.id, mockName)
+            val delay = getDelay(mock, service)
+            val result = checkTriggers(parsedQuery, mock, delay)
+            if (result.response == null) {
+                checkDefaultFlow(service, query, delay, mock)
+            } else {
+                result
+            }
         }
-
-        return checkTriggers(parsedQuery, mock, delay)
     }
 
     private fun getDelay(mock: MockDto?, service: MockServiceDto) =
         mock?.delay ?: service.delay ?: error("Unspecified delay")
 
     private fun checkDefaultFlow(service: MockServiceDto, query: JsonNode, delay: Long): UserResult {
+        return if (service.makeRealCall == true) {
+            val response = redirectService.callRealService(service, query)
+            UserResult(response, delay)
+        } else {
+            // Todo id mock
+            throw MockNotFoundException(1)
+        }
+    }
+
+    private fun checkDefaultFlow(service: MockServiceDto, query: JsonNode, delay: Long, mock: MockDto): UserResult {
         return when {
             service.makeRealCall == true -> {
                 val response = redirectService.callRealService(service, query)
                 UserResult(response, delay)
             }
 
-            service.defaultMockId != null -> {
-                val defaultMock = mockServiceHandler.getDefaultMock(service.defaultMockId!!)
-                UserResult(defaultMock.response.toJson(), delay)
+            service.useDefaultMock == true -> {
+                UserResult(mock.response.toJson(), delay)
             }
 
             else -> throw NotFoundException("Mock with service id = ${service.id} and suitable body not found")
@@ -65,9 +88,9 @@ class UserService(
 
         val responseBody = triggers.firstOrNull { trigger ->
             triggerDocumentMatcher.match(document, trigger)
-        }?.response ?: mock.response
+        }?.response
 
-        return UserResult(responseBody.toJson(), delay)
+        return UserResult(responseBody?.toJson(), delay)
     }
 
     private fun String.toJson() = objectMapper.readTree(this)

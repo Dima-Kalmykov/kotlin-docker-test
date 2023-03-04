@@ -23,13 +23,6 @@ class MockServiceController(
     @GetMapping("/{id}/mocks")
     fun getMocks(@PathVariable id: Long) = mockService.getMocks(id)
 
-    // Todo default mock doesn't exist
-    @GetMapping("/{id}/mocks/default")
-    @SuccessfulApiResponse
-    @NotFoundApiResponse(description = MOCK_NOT_FOUND_DESCRIPTION)
-    @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)
-    fun getDefaultMock(@PathVariable id: Long) = mockServiceHandler.getDefaultMock(id)
-
     @GetMapping("/{id}")
     @SuccessfulApiResponse
     @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)

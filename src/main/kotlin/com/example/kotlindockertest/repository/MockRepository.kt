@@ -37,4 +37,6 @@ interface MockRepository : CrudRepository<MockDto, Long> {
         """
     )
     fun deleteMocksByTtl()
+
+    fun findByServiceIdAndName(serviceId: Long, name: String): Optional<MockDto>
 }

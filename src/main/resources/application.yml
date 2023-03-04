@@ -10,11 +10,12 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
   jpa:
     hibernate:
-      ddl-auto: update # TODO make none
-    show-sql: true
+      ddl-auto: create # TODO make none
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 logging:
   level:

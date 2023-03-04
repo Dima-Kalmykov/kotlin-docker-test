@@ -6,9 +6,10 @@ import com.example.kotlindockertest.service.TriggerService
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@RequestMapping("/grpaphql")
 class TriggerController(private val triggerService: TriggerService) {
 
-    @GetMapping("mocks/{mockId}/triggers")
+    @GetMapping("/mocks/{mockId}/triggers")
     fun getTriggers(@PathVariable mockId: Long) = triggerService.getTriggers(mockId)
 
     @GetMapping("/triggers/{id}")

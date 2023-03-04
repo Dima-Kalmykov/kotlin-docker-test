@@ -4,6 +4,8 @@ import com.example.kotlindockertest.model.trigger.TriggerDto
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
+import java.util.Optional
+import javax.swing.text.html.Option
 
 interface TriggerRepository : CrudRepository<TriggerDto, Long> {
 
