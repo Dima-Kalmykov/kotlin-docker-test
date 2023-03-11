@@ -1,9 +1,6 @@
 package com.example.kotlindockertest.model.service
 
 import com.example.kotlindockertest.model.mock.MockDto
-import java.sql.Timestamp
-import java.time.DateTimeException
-import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.persistence.*
 

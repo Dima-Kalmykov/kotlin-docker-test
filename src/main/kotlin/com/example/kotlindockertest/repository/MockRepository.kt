@@ -21,6 +21,9 @@ interface MockRepository : CrudRepository<MockDto, Long> {
     // Todo check query. Только один join
     fun getAllByServiceId(serviceId: Long): List<MockDto>
 
+    // Todo check
+    fun countByServiceId(serviceId: Long): Long
+
     fun findByServiceIdAndRequestHash(serviceId: Long, requestHash: Int): Optional<MockDto>
 
     @Modifying

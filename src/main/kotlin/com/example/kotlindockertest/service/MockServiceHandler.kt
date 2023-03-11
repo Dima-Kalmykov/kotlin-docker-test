@@ -5,6 +5,7 @@ import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.exception.ServiceNotFoundException
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.service.MockServiceDto
+import com.example.kotlindockertest.model.service.MockServiceShortInfoDto
 import com.example.kotlindockertest.repository.MockRepository
 import com.example.kotlindockertest.repository.MockServiceRepository
 import com.example.kotlindockertest.utils.toDateTime
@@ -19,7 +20,14 @@ class MockServiceHandler(
 ) {
 
     @Transactional(readOnly = true)
-    fun getServices() = mockServiceRepository.getServices()
+    fun getServices(): List<MockServiceShortInfoDto> {
+        val services = mockServiceRepository.getServices()
+        services.forEach { service ->
+            service.mocksCount = mockRepository.countByServiceId(service.id)
+        }
+
+        return services
+    }
 
     @Transactional(readOnly = true)
     fun getServiceByName(name: String): MockServiceDto = mockServiceRepository.findByName(name)
