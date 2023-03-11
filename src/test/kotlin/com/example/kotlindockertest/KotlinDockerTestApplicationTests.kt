@@ -12,8 +12,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.IntNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import graphql.GraphQL
 import graphql.language.*
 import graphql.parser.Parser
+import graphql.schema.GraphQLSchema
+import graphql.schema.idl.RuntimeWiring
+import graphql.schema.idl.SchemaGenerator
+import graphql.schema.idl.SchemaParser
+import graphql.schema.idl.TypeDefinitionRegistry
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -33,6 +39,57 @@ class KotlinDockerTestApplicationTests {
     @Autowired lateinit var triggerFloatMatcher: TriggerMatcher
     @Autowired lateinit var triggerRepository: TriggerRepository
 
+
+    private fun getStr(): String {
+        val str: String = """
+            type Post {
+                id: ID!
+                title: String!
+                text: String!
+                category: String
+                author: Author!
+            }
+
+            type Author {
+                id: ID!
+                name: String!
+                thumbnail: String
+                posts: [Post]!
+            }
+
+            # The Root Query for the application
+            type Query {
+                recentPosts(count: Int, offset: Int): [Post]!
+            }
+
+            # The Root Mutation for the application
+            type Mutation {
+                createPost(title: String!, text: String!, category: String, authorId: String!) : Post!
+            }
+        """.trimIndent()
+
+        return """
+            type Book {
+                id: ID!
+                name: String!
+            }
+            type Query {
+                books: [Book!]!
+            }
+        """.trimIndent()
+    }
+    @Test
+    fun schema() {
+        val parser = SchemaParser()
+        val str = getStr()
+        val parsedScheme: TypeDefinitionRegistry = parser.parse(str)
+        val schema: GraphQLSchema = SchemaGenerator().makeExecutableSchema(parsedScheme, RuntimeWiring.MOCKED_WIRING)
+        val graphQL: GraphQL = GraphQL.newGraphQL(schema).build()
+
+        val query = "query{users{name}}"
+        val result = graphQL.execute(query)
+        println(result)
+}
     @Test
     fun test() {
         val beanProxy = listableBeanFactory.getBean(TriggerFloatMatcher::class.java)

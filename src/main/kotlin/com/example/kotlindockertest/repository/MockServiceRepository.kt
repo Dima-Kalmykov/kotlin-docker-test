@@ -11,7 +11,7 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
 
     @Query(
         """
-        SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.host) 
+        SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location) 
         FROM MockServiceDto s
         """
     )

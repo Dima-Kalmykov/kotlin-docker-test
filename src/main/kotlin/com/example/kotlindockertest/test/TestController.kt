@@ -1,20 +1,25 @@
 package com.example.kotlindockertest.test
 
+import com.example.kotlindockertest.exception.ValidationException
 import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.service.FieldSearcher
 import com.example.kotlindockertest.service.GraphQLQueryParser
 import com.example.kotlindockertest.service.TriggerDocumentMatcher
+import com.example.kotlindockertest.service.schema.SchemaValidator
 import com.fasterxml.jackson.databind.JsonNode
+import graphql.AssertException
 import graphql.GraphQL
+import graphql.analysis.*
 import graphql.language.*
 import graphql.parser.Parser
 import graphql.schema.GraphQLSchema
+import graphql.schema.idl.RuntimeWiring
+import graphql.schema.idl.SchemaGenerator
+import graphql.schema.idl.SchemaParser
+import graphql.schema.idl.TypeDefinitionRegistry
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+
 
 @RestController
 class TestController(
@@ -22,6 +27,7 @@ class TestController(
     private val queryParser: GraphQLQueryParser,
     private val triggerDocumentMatcher: TriggerDocumentMatcher,
     private val factory: ConfigurableListableBeanFactory,
+    private val schemaValidator: SchemaValidator,
 ) {
 
     companion object : Thread()
@@ -74,8 +80,24 @@ class TestController(
         println(query.toString())
         val parsed = queryParser.parseRequest(query)
         println(parsed)
-        val document = parser.parseDocument(parsed)
+        val schemaStr = """
+            type Book {
+                id: ID!
+                name: String!
+            }
+            type User {
+                name: String
+            }
+            type Query {
+                books: [Book!]!
+                book(id: ID!): Book
+                user: User!
+                
+            }
+        """.trimIndent()
+        val document: Document = parser.parseDocument(parsed)
         println(document)
+        schemaValidator.validate(document, schemaStr)
 
 
         return "Ok"

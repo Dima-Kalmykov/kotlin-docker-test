@@ -8,6 +8,7 @@ import com.example.kotlindockertest.model.service.MockServiceDto
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.parser.Parser
+import graphql.schema.idl.SchemaParser
 import org.springframework.stereotype.Service
 
 @Service
@@ -25,14 +26,12 @@ class UserService(
 
     fun getResponse(
         serviceName: String,
-        mockName: String,
         identicalComparison: Boolean,
         query: JsonNode,
     ): UserResult {
         val service = mockServiceHandler.getServiceByName(serviceName)
 
         val parsedQuery = graphQLQueryParser.parseRequest(query)
-
         return if (identicalComparison) {
             val mock = mockService.getMockByRequestHash(service.id, parsedQuery.hashCode())
             val delay = getDelay(mock, service)

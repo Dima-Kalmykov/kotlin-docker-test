@@ -41,7 +41,6 @@ class MockServiceHandler(
     fun patchService(id: Long, service: MockServiceDto): MockServiceDto {
         val updatedService = getService(id).apply {
             this.name = service.name
-            this.host = service.host
             this.ttlDateTime = service.ttl.toDateTime()
             this.location = service.location
             this.makeRealCall = service.makeRealCall

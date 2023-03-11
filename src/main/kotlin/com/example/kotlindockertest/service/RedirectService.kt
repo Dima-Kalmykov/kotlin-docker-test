@@ -20,9 +20,7 @@ class RedirectService {
     }
 
     private fun buildUrl(service: MockServiceDto): String {
-        val url = "${service.host}${service.location.orEmpty()}"
-
-        return fromHttpUrl(url)
+        return fromHttpUrl(service.location)
             .query("query={body}")
             .encode()
             .toUriString()
