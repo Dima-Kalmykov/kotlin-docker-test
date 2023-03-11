@@ -16,10 +16,8 @@ open class MockDto(
     open var id: Long,
 
     open var name: String,
-    @Transient
-    open var ttl: Long,
     // Todo мб индекс
-    open var ttlDateTime: LocalDateTime? = null,
+    open var expirationDate: LocalDateTime? = null,
     open var delay: Long? = null, // millis
     open var enable: Boolean = true,
 

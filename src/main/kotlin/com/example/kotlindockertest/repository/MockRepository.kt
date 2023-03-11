@@ -18,6 +18,9 @@ interface MockRepository : CrudRepository<MockDto, Long> {
     )
     fun getMocks(serviceId: Long): List<MockShortInfoDto>
 
+    // Todo check query. Только один join
+    fun getAllByServiceId(serviceId: Long): List<MockDto>
+
     fun findByServiceIdAndRequestHash(serviceId: Long, requestHash: Int): Optional<MockDto>
 
     @Modifying
@@ -33,7 +36,7 @@ interface MockRepository : CrudRepository<MockDto, Long> {
     @Query(
         """
             DELETE FROM MockDto m
-            WHERE m.ttlDateTime < CURRENT_TIMESTAMP()
+            WHERE m.expirationDate < CURRENT_TIMESTAMP()
         """
     )
     fun deleteMocksByTtl()

@@ -20,12 +20,13 @@ class UserController(private val userService: UserService) {
     @PostMapping("/mocker/{serviceName}")
     fun getMockedResponse(
         @PathVariable serviceName: String,
-        @RequestParam(defaultValue = false.toString()) identicalComparison: Boolean,
+        // Todo make false for triggers
+//        @RequestParam(defaultValue = true.toString()) identicalComparison: Boolean,
         @RequestBody query: JsonNode,
     ): JsonNode? {
         var userResult: UserResult
         val time = measureTimeMillis {
-            userResult = userService.getResponse(serviceName, identicalComparison, query)
+            userResult = userService.getResponse(serviceName, true, query)
         }
 
         // Todo use coroutines
@@ -34,6 +35,3 @@ class UserController(private val userService: UserService) {
         return userResult.response
     }
 }
-
-
- data class QueryWrapper(val query: String)

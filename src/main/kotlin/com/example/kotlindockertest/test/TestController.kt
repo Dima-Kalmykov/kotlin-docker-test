@@ -1,24 +1,20 @@
 package com.example.kotlindockertest.test
 
-import com.example.kotlindockertest.exception.ValidationException
+import com.example.kotlindockertest.model.SchemaDto
+import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.service.FieldSearcher
 import com.example.kotlindockertest.service.GraphQLQueryParser
+import com.example.kotlindockertest.service.RedirectService
 import com.example.kotlindockertest.service.TriggerDocumentMatcher
 import com.example.kotlindockertest.service.schema.SchemaValidator
 import com.fasterxml.jackson.databind.JsonNode
-import graphql.AssertException
-import graphql.GraphQL
 import graphql.analysis.*
 import graphql.language.*
 import graphql.parser.Parser
-import graphql.schema.GraphQLSchema
-import graphql.schema.idl.RuntimeWiring
-import graphql.schema.idl.SchemaGenerator
-import graphql.schema.idl.SchemaParser
-import graphql.schema.idl.TypeDefinitionRegistry
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 
 
 @RestController
@@ -28,6 +24,7 @@ class TestController(
     private val triggerDocumentMatcher: TriggerDocumentMatcher,
     private val factory: ConfigurableListableBeanFactory,
     private val schemaValidator: SchemaValidator,
+    private val redirectService: RedirectService,
 ) {
 
     companion object : Thread()
@@ -71,38 +68,37 @@ class TestController(
         return triggerDocumentMatcher.match(document, query)
     }
 
-    @PostMapping("/g")
+    @PostMapping("/schema")
     fun test2(
         @RequestParam allRequestParams: Map<String, String>,
-        @RequestBody query: JsonNode,
+        @RequestBody schema: SchemaDto,
     ): String {
-        val parser = Parser()
-        println(query.toString())
-        val parsed = queryParser.parseRequest(query)
-        println(parsed)
-        val schemaStr = """
-            type Book {
-                id: ID!
-                name: String!
-            }
-            type User {
-                name: String
-            }
-            type Query {
-                books: [Book!]!
-                book(id: ID!): Book
-                user: User!
-                
-            }
-        """.trimIndent()
-        val document: Document = parser.parseDocument(parsed)
-        println(document)
-        schemaValidator.validate(document, schemaStr)
-
-
+        println(schema.schema)
+        schemaValidator.validate(schema.schema)
+        // type Book {\n    id: ID!\n    name: String!\n}\ntype Query {\n    books: [Book!]!\n}
         return "Ok"
 //        return triggerDocumentMatcher.match(document, query)
     }
+
+    @PostMapping("/redirect")
+    fun redirect(@RequestBody query: JsonNode): JsonNode? {
+        val parser = Parser()
+        println(query)
+        val parsed = queryParser.parseRequest(query)
+        println(parsed)
+        val document: Document = parser.parseDocument(parsed)
+        println(document)
+        val service = MockServiceDto(
+            1, "", "http://localhost:8080/graphql", LocalDateTime.now(),
+        )
+        val callRealService = redirectService.callRealService(service, query.toString())
+        println(callRealService)
+
+        return callRealService
+//        return triggerDocumentMatcher.match(document, query)
+    }
+
+
 
     @GetMapping("/foo")
     fun foo() {

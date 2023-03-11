@@ -9,7 +9,7 @@ import com.example.kotlindockertest.utils.MOCK_NOT_FOUND_DESCRIPTION
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/mocks")
+@RequestMapping("/graphql/mocks")
 class MockController(private val mockService: MockService) {
 
     @GetMapping("/{id}")

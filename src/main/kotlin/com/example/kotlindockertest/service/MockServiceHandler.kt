@@ -10,6 +10,7 @@ import com.example.kotlindockertest.repository.MockServiceRepository
 import com.example.kotlindockertest.utils.toDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class MockServiceHandler(
@@ -24,14 +25,16 @@ class MockServiceHandler(
     fun getServiceByName(name: String): MockServiceDto = mockServiceRepository.findByName(name)
         .orElseThrow { throw NotFoundException("Service with name $name doesn't exist") }
 
+    // Todo переделать через join
     @Transactional(readOnly = true)
     fun getService(id: Long): MockServiceDto = mockServiceRepository.findById(id).orElseThrow {
         throw ServiceNotFoundException(id)
+    }.apply {
+        this.mocks = mockRepository.getAllByServiceId(id)
     }
 
     @Transactional
     fun addService(service: MockServiceDto): Long {
-        service.ttlDateTime = service.ttl.toDateTime()
         val savedService = mockServiceRepository.save(service)
 
         return savedService.id
@@ -41,10 +44,11 @@ class MockServiceHandler(
     fun patchService(id: Long, service: MockServiceDto): MockServiceDto {
         val updatedService = getService(id).apply {
             this.name = service.name
-            this.ttlDateTime = service.ttl.toDateTime()
+            this.expirationDate = service.expirationDate
             this.location = service.location
             this.makeRealCall = service.makeRealCall
             this.delay = service.delay
+            this.schema = service.schema
         }
 
         return updatedService

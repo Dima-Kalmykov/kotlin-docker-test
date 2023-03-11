@@ -11,7 +11,7 @@ import com.example.kotlindockertest.utils.SERVICE_NOT_FOUND_DESCRIPTION
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/services")
+@RequestMapping("/graphql/services")
 class MockServiceController(
     private val mockServiceHandler: MockServiceHandler,
     private val mockService: MockService,
@@ -20,6 +20,7 @@ class MockServiceController(
     @GetMapping("/")
     fun getServices() = mockServiceHandler.getServices()
 
+    // Todo кажется, что не нужен, есть /getService
     @GetMapping("/{id}/mocks")
     fun getMocks(@PathVariable id: Long) = mockService.getMocks(id)
 

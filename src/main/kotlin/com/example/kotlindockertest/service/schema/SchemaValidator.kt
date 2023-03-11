@@ -1,8 +1,6 @@
 package com.example.kotlindockertest.service.schema
 
-import com.example.kotlindockertest.exception.ValidationException
-import graphql.analysis.QueryTraverser
-import graphql.analysis.QueryVisitor
+import com.example.kotlindockertest.exception.SchemaValidationException
 import graphql.language.Document
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.RuntimeWiring
@@ -14,25 +12,16 @@ import org.springframework.stereotype.Service
 class SchemaValidator(
     private val schemaGenerator: SchemaGenerator,
     private val schemaParser: SchemaParser,
-    private val queryVisitor: QueryVisitor,
 ) {
 
-    fun validate(document: Document, schemaStringRepresentation: String) {
+    fun validate(schemaStringRepresentation: String): GraphQLSchema {
         val typeRegistry = schemaParser.parse(schemaStringRepresentation)
-        val schema = schemaGenerator.makeExecutableSchema(typeRegistry, RuntimeWiring.MOCKED_WIRING)
-
-        val traverser = buildTraverser(document, schema)
 
         try {
-            traverser.visitDepthFirst(queryVisitor)
+            val schema = schemaGenerator.makeExecutableSchema(typeRegistry, RuntimeWiring.MOCKED_WIRING)
+            return checkNotNull(schema) { "Graphql schema can't be null" }
         } catch (exception: Exception) {
-            throw ValidationException(exception.message)
+            throw SchemaValidationException(exception.message)
         }
     }
-
-    private fun buildTraverser(document: Document, schema: GraphQLSchema) = QueryTraverser
-        .newQueryTraverser()
-        .document(document)
-        .schema(schema)
-        .build()
 }

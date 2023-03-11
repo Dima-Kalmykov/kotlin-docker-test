@@ -37,7 +37,6 @@ class MockService(
 
     @Transactional
     fun addMock(mock: MockDto): Long {
-        mock.ttlDateTime = mock.ttl.toDateTime()
         val savedMock = mockRepository.save(mock)
 
         return savedMock.id
@@ -47,7 +46,7 @@ class MockService(
     fun patchMock(id: Long, mock: MockDto): MockDto {
         val updatedMock = getMock(id).apply {
             this.name = mock.name
-            this.ttlDateTime = mock.ttl.toDateTime()
+            this.expirationDate = mock.expirationDate
             this.request = mock.request
             this.response = mock.response
             this.delay = mock.delay

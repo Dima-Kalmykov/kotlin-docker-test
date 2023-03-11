@@ -23,7 +23,7 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
     @Query(
         """
             DELETE FROM MockServiceDto m
-            WHERE m.ttlDateTime < CURRENT_TIMESTAMP()
+            WHERE m.expirationDate < CURRENT_TIMESTAMP()
         """
     )
     fun deleteServicesByTtl()

@@ -1,14 +1,14 @@
 package com.example.kotlindockertest.service
 
-import com.example.kotlindockertest.exception.MockNotFoundException
 import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.model.UserResult
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.service.MockServiceDto
+import com.example.kotlindockertest.service.schema.DocumentValidator
+import com.example.kotlindockertest.service.schema.SchemaValidator
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.parser.Parser
-import graphql.schema.idl.SchemaParser
 import org.springframework.stereotype.Service
 
 @Service
@@ -20,9 +20,9 @@ class UserService(
     private val triggerService: TriggerService,
     private val objectMapper: ObjectMapper,
     private val mockService: MockService,
+    private val documentValidator: DocumentValidator,
+    private val documentParser: Parser,
 ) {
-
-    private val documentParser = Parser()
 
     fun getResponse(
         serviceName: String,
@@ -30,8 +30,14 @@ class UserService(
         query: JsonNode,
     ): UserResult {
         val service = mockServiceHandler.getServiceByName(serviceName)
-
+        // Todo можно тупо вытаскивать все триггеры сразу
         val parsedQuery = graphQLQueryParser.parseRequest(query)
+        val document = documentParser.parseDocument(parsedQuery)
+
+        service.schema?.let {
+            documentValidator.validate(document, it)
+        }
+
         return if (identicalComparison) {
             val mock = mockService.getMockByRequestHash(service.id, parsedQuery.hashCode())
             val delay = getDelay(mock, service)
@@ -41,7 +47,8 @@ class UserService(
                 UserResult(mock.response.toJson(), delay)
             }
         } else {
-            val mock = mockService.getMockByName(service.id, mockName)
+            // Todo fix
+            val mock = mockService.getMockByName(service.id, "mockName")
             val delay = getDelay(mock, service)
             val result = checkTriggers(parsedQuery, mock, delay)
             if (result.response == null) {
@@ -57,18 +64,17 @@ class UserService(
 
     private fun checkDefaultFlow(service: MockServiceDto, query: JsonNode, delay: Long): UserResult {
         return if (service.makeRealCall == true) {
-            val response = redirectService.callRealService(service, query)
+            val response = redirectService.callRealService(service, query.toString())
             UserResult(response, delay)
         } else {
-            // Todo id mock
-            throw MockNotFoundException(1)
+            error("Service with name ${service.name} doesn't contain suitable mock")
         }
     }
 
     private fun checkDefaultFlow(service: MockServiceDto, query: JsonNode, delay: Long, mock: MockDto): UserResult {
         return when {
             service.makeRealCall == true -> {
-                val response = redirectService.callRealService(service, query)
+                val response = redirectService.callRealService(service, query.toString())
                 UserResult(response, delay)
             }
 

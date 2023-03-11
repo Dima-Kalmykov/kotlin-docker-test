@@ -1,6 +1,5 @@
 package com.example.kotlindockertest
 
-import com.example.kotlindockertest.controller.QueryWrapper
 import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.repository.TriggerRepository
 import com.example.kotlindockertest.service.TriggerPathTokenizer
@@ -82,13 +81,13 @@ class KotlinDockerTestApplicationTests {
     fun schema() {
         val parser = SchemaParser()
         val str = getStr()
+        println(str.replace("\n", "\\n"))
         val parsedScheme: TypeDefinitionRegistry = parser.parse(str)
         val schema: GraphQLSchema = SchemaGenerator().makeExecutableSchema(parsedScheme, RuntimeWiring.MOCKED_WIRING)
         val graphQL: GraphQL = GraphQL.newGraphQL(schema).build()
 
         val query = "query{users{name}}"
         val result = graphQL.execute(query)
-        println(result)
 }
     @Test
     fun test() {
@@ -124,30 +123,6 @@ class KotlinDockerTestApplicationTests {
         result.forEach {
             println(it)
         }
-    }
-
-    @Test
-    fun test23() {
-        val query = QueryWrapper("321")
-        val writeValueAsString = ObjectMapper().writeValueAsString(query)
-        println(writeValueAsString)
-    }
-
-
-    private fun JsonNode.getGraphqlQuery() =
-        this.get("query")
-            .toString()
-            .replace("\\r\\n", "")
-            .trim('"')
-
-    private fun Document.findField(name: String): Field? {
-        definitions.forEach { definition ->
-            val operationDefinition = definition as OperationDefinition
-
-            return operationDefinition.selectionSet.findField(name) ?: return@forEach
-        }
-
-        return null
     }
 
     private fun SelectionSet.findField(fieldName: String): Field? {

@@ -9,20 +9,17 @@ import org.springframework.web.util.UriComponentsBuilder.fromHttpUrl
 @Service
 class RedirectService {
 
-    fun callRealService(service: MockServiceDto, body: JsonNode): JsonNode? {
+    fun callRealService(service: MockServiceDto, body: String): JsonNode? {
         val restTemplate = RestTemplate() // Todo вынести в конфигурацию
 
-        return restTemplate.getForObject(
+        return restTemplate.postForObject(
             buildUrl(service),
-            JsonNode::class.java,
             body,
+            JsonNode::class.java,
         )
     }
 
-    private fun buildUrl(service: MockServiceDto): String {
-        return fromHttpUrl(service.location)
-            .query("query={body}")
-            .encode()
-            .toUriString()
-    }
+    private fun buildUrl(service: MockServiceDto) = fromHttpUrl(service.location)
+        .encode()
+        .toUriString()
 }

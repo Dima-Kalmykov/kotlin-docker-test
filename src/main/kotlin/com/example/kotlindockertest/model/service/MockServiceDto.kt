@@ -1,5 +1,7 @@
 package com.example.kotlindockertest.model.service
 
+import com.example.kotlindockertest.model.mock.MockDto
+import java.sql.Timestamp
 import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -14,11 +16,13 @@ open class MockServiceDto(
 
     @Column(unique = true)
     open var name: String,
-    open var location: String, // Todo must start with /
-    @Transient
-    open var ttl: Long,
-    open var ttlDateTime: LocalDateTime? = null,
+    open var location: String,
+    open var expirationDate: LocalDateTime? = null,
     open var delay: Long? = null,
     open var makeRealCall: Boolean? = null,
     open var useDefaultMock: Boolean? = null,
+    @Transient
+    open var mocks: List<MockDto> = emptyList(),
+    @Lob
+    open var schema: String? = null,
 )
