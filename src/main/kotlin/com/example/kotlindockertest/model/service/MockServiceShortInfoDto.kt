@@ -5,5 +5,5 @@ class MockServiceShortInfoDto(
     var name: String,
     var location: String,
 ) {
-    var mocksCount: Long? = null
+    var mocksCount: Long = 0
 }
