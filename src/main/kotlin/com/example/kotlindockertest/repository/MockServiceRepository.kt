@@ -13,9 +13,10 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
         """
         SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location) 
         FROM MockServiceDto s
+        WHERE s.name LIKE %?1% OR s.location LIKE %?1%
         """
     )
-    fun getServices(): List<MockServiceShortInfoDto>
+    fun getServices(search: String): List<MockServiceShortInfoDto>
 
     fun findByName(name: String): Optional<MockServiceDto>
 

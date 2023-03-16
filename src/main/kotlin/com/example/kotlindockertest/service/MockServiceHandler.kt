@@ -1,17 +1,13 @@
 package com.example.kotlindockertest.service
 
-import com.example.kotlindockertest.exception.MockNotFoundException
 import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.exception.ServiceNotFoundException
-import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.model.service.MockServiceShortInfoDto
 import com.example.kotlindockertest.repository.MockRepository
 import com.example.kotlindockertest.repository.MockServiceRepository
-import com.example.kotlindockertest.utils.toDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 
 @Service
 class MockServiceHandler(
@@ -20,8 +16,8 @@ class MockServiceHandler(
 ) {
 
     @Transactional(readOnly = true)
-    fun getServices(): List<MockServiceShortInfoDto> {
-        val services = mockServiceRepository.getServices()
+    fun getServices(search: String): List<MockServiceShortInfoDto> {
+        val services = mockServiceRepository.getServices(search)
         services.forEach { service ->
             service.mocksCount = mockRepository.countByServiceId(service.id)
         }

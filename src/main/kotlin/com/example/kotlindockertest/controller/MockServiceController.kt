@@ -6,7 +6,6 @@ import com.example.kotlindockertest.model.StringIdResponse
 import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.service.MockService
 import com.example.kotlindockertest.service.MockServiceHandler
-import com.example.kotlindockertest.utils.MOCK_NOT_FOUND_DESCRIPTION
 import com.example.kotlindockertest.utils.SERVICE_NOT_FOUND_DESCRIPTION
 import org.springframework.web.bind.annotation.*
 
@@ -18,7 +17,7 @@ class MockServiceController(
 ) {
 
     @GetMapping("/")
-    fun getServices() = mockServiceHandler.getServices()
+    fun getServices(@RequestParam search: String) = mockServiceHandler.getServices(search)
 
     // Todo кажется, что не нужен, есть /getService
     @GetMapping("/{id}/mocks")
