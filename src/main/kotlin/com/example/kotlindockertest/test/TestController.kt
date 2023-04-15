@@ -15,9 +15,11 @@ import graphql.parser.Parser
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import javax.swing.text.html.parser.DocumentParser
 
 
-@RestController
+//@RestController
 class TestController(
     private val fieldSearcher: FieldSearcher,
     private val queryParser: GraphQLQueryParser,
@@ -70,7 +72,6 @@ class TestController(
 
     @PostMapping("/schema")
     fun test2(
-        @RequestParam allRequestParams: Map<String, String>,
         @RequestBody schema: SchemaDto,
     ): String {
         println(schema.schema)
@@ -84,18 +85,26 @@ class TestController(
     fun redirect(@RequestBody query: JsonNode): JsonNode? {
         val parser = Parser()
         println(query)
-        val parsed = queryParser.parseRequest(query)
-        println(parsed)
-        val document: Document = parser.parseDocument(parsed)
-        println(document)
+//        val parsed = queryParser.parseRequest(query)
+//        println(parsed)
+//        val document: Document = parser.parseDocument(parsed)
+//        println(document)
         val service = MockServiceDto(
-            1, "", "http://localhost:8080/graphql", LocalDateTime.now(),
+            1, "", "http://localhost:8080/graphql", ZonedDateTime.now(),
         )
         val callRealService = redirectService.callRealService(service, query.toString())
         println(callRealService)
 
         return callRealService
 //        return triggerDocumentMatcher.match(document, query)
+    }
+
+
+
+    @PostMapping("/compare")
+    fun compareRecursive(@RequestBody query: JsonNode) {
+
+//        val document
     }
 
 

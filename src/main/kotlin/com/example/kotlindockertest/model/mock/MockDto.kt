@@ -1,23 +1,25 @@
 package com.example.kotlindockertest.model.mock
 
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import javax.persistence.*
 
 @Entity
 @Table(
     name = "mock",
     indexes = [
-        Index(name = "i_request_hash", columnList = "requestHash", unique = true),
+        Index(name = "i_request_hash", columnList = "requestHash"),
     ],
 )
 open class MockDto(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open var id: Long,
+    @Column(nullable = false)
+    open var id: Long? = null,
 
     open var name: String,
     // Todo мб индекс
-    open var expirationDate: LocalDateTime? = null,
+    open var expirationDate: ZonedDateTime? = null,
     open var delay: Long? = null, // millis
     open var enable: Boolean = true,
 

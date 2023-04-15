@@ -11,9 +11,9 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
 
     @Query(
         """
-        SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location) 
+        SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location, s.expirationDate) 
         FROM MockServiceDto s
-        WHERE s.name LIKE %?1% OR s.location LIKE %?1%
+        WHERE UPPER(s.name) LIKE %?1% OR UPPER(s.location) LIKE %?1%
         """
     )
     fun getServices(search: String): List<MockServiceShortInfoDto>
@@ -23,9 +23,18 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
     @Modifying
     @Query(
         """
-            DELETE FROM MockServiceDto m
-            WHERE m.expirationDate < CURRENT_TIMESTAMP()
+            DELETE FROM MockServiceDto s
+            WHERE s.expirationDate < CURRENT_TIMESTAMP()
         """
     )
     fun deleteServicesByTtl()
+
+    @Query(
+        """
+            SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location, s.expirationDate) 
+            FROM MockServiceDto s
+            WHERE s.expirationDate < CURRENT_TIMESTAMP()
+        """
+    )
+    fun getServicesToBeDeleted(): List<MockServiceShortInfoDto>
 }

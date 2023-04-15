@@ -4,11 +4,15 @@ server:
     include-message: always
 
 spring:
+  sql:
+    init:
+      encoding: UTF8
   datasource:
     username: postgres
-    password: postgres
-#    url: jdbc:postgresql://localhost:5432/postgres
-    url: jdbc:postgresql://78.24.220.57:5432/postgres
+#    password: postgres
+    password: asldjk23
+#    url: jdbc:postgresql://localhost:5432/postgres?characterEncoding=UTF-8
+    url: jdbc:postgresql://78.24.220.57:5432/postgres?characterEncoding=UTF8
   jpa:
     hibernate:
       ddl-auto: update

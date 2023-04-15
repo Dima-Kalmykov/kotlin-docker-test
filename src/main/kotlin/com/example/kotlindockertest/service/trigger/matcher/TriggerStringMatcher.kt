@@ -15,6 +15,8 @@ class TriggerStringMatcher : TriggerMatcher {
     override fun match(argument: Argument, trigger: TriggerDto): Boolean {
         val argumentValue = (argument.value as StringValue).value
         val triggerValue = trigger.value
+        println("regex pattern = $triggerValue")
+        println("Argument = $argumentValue")
 
         return when (trigger.operation) {
             OperationType.EQUAL -> argumentValue == triggerValue
@@ -22,6 +24,7 @@ class TriggerStringMatcher : TriggerMatcher {
             OperationType.LESS_OR_EQUAL -> argumentValue <= triggerValue
             OperationType.GREATER -> argumentValue > triggerValue
             OperationType.GREATER_OR_EQUAL -> argumentValue >= triggerValue
+            OperationType.REGEX -> Regex(triggerValue).matches(argumentValue)
         }
     }
 }

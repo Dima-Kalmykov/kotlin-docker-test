@@ -27,6 +27,8 @@ dependencies {
     implementation(group = "io.github.microutils", name = "kotlin-logging", version = "3.0.4")
     implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin")
     implementation(group = "org.springdoc", name = "springdoc-openapi-ui", version = "1.6.14")
+// https://mvnrepository.com/artifact/org.assertj/assertj-core
+    implementation("org.assertj:assertj-core:3.24.2")
 
     // kotlin
     implementation(kotlin("reflect"))

@@ -1,12 +1,13 @@
 package com.example.kotlindockertest.controller
 
+import com.example.kotlindockertest.model.ActivateRequestDto
 import com.example.kotlindockertest.model.StringIdResponse
 import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.service.TriggerService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/grpaphql")
+@RequestMapping("/graphql")
 class TriggerController(private val triggerService: TriggerService) {
 
     @GetMapping("/mocks/{mockId}/triggers")
@@ -28,6 +29,12 @@ class TriggerController(private val triggerService: TriggerService) {
         @PathVariable id: Long,
         @RequestBody trigger: TriggerDto,
     ) = triggerService.patchTrigger(id, trigger)
+
+    @PatchMapping("/triggers/{id}")
+    fun activateTriggers(
+        @PathVariable id: Long,
+        @RequestBody request: ActivateRequestDto,
+    ) = triggerService.activateTrigger(id, request)
 
     @DeleteMapping("/triggers/{id}")
     fun deleteTrigger(@PathVariable id: Long): StringIdResponse {

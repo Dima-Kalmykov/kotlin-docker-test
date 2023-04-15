@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/graphql/validation")
 class SchemaController(private val schemaValidator: SchemaValidator) {
 
-    @PostMapping("/")
+    @PostMapping
     fun validate(@RequestBody schema: SchemaDto): SchemaDto {
         schemaValidator.validate(schema.schema)
 

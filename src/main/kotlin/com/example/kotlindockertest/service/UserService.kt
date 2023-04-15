@@ -1,13 +1,14 @@
 package com.example.kotlindockertest.service
 
-import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.model.UserResult
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.service.MockServiceDto
+import com.example.kotlindockertest.model.trigger.TriggerDto
+import com.example.kotlindockertest.service.document.DocumentComparator
 import com.example.kotlindockertest.service.schema.DocumentValidator
-import com.example.kotlindockertest.service.schema.SchemaValidator
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import graphql.language.Document
 import graphql.parser.Parser
 import org.springframework.stereotype.Service
 
@@ -22,45 +23,91 @@ class UserService(
     private val mockService: MockService,
     private val documentValidator: DocumentValidator,
     private val documentParser: Parser,
+    private val documentComparator: DocumentComparator,
 ) {
 
     fun getResponse(
         serviceName: String,
-        identicalComparison: Boolean,
         query: JsonNode,
     ): UserResult {
         val service = mockServiceHandler.getServiceByName(serviceName)
-        // Todo можно тупо вытаскивать все триггеры сразу
-        val parsedQuery = graphQLQueryParser.parseRequest(query)
+        println("Input query = ${query}")
+        val parsedQuery = graphQLQueryParser.parseForDocument(query)
+        println("Parsed = $parsedQuery")
         val document = documentParser.parseDocument(parsedQuery)
 
-        service.schema?.let {
-            documentValidator.validate(document, it)
+//        validateSchemaIfExist(service, document)
+
+        val mock = mockService.getMockByRequestHash(
+            service.id!!,
+            graphQLQueryParser.parseForHashCode(query).hashCode(),
+        )
+
+        val delay = getDelay(mock, service)
+
+        return when {
+            mock != null && !mock.enable -> checkDefaultFlow(service, query, delay)
+
+            mock != null -> UserResult(mock.response.toJson(), delay)
+
+            else -> checkTriggers(service, document, query, delay)
+        }
+    }
+
+    private fun checkTriggers(
+        service: MockServiceDto,
+        document: Document,
+        query: JsonNode,
+        delay: Long,
+    ): UserResult {
+        val triggers = triggerService.getTriggersByServiceId(service.id!!)
+        val visited = triggers.associate { it.mockId to false }.toMutableMap()
+
+        triggers.forEach {
+            val mockId = it.mockId
+
+            if (visited[mockId] == false) {
+                val mockByTrigger = mockService.getMock(mockId)
+
+                val mockDocument = documentParser.parseDocument(mockByTrigger.request)
+                println("Doc = $document")
+                println("MockDO = $mockDocument")
+                println("-".repeat(100))
+                if (documentComparator.areEqual(document, mockDocument)) {
+                    println("Yes, equals")
+                    if (triggers.match(document, mockId)) {
+                        return UserResult(mockByTrigger.response.toJson(), delay)
+                    } else {
+                        visited[mockId] = true
+                    }
+                } else {
+                    visited[mockId] = true
+                }
+            }
         }
 
-        return if (identicalComparison) {
-            val mock = mockService.getMockByRequestHash(service.id, parsedQuery.hashCode())
-            val delay = getDelay(mock, service)
-            if (mock == null) {
-                checkDefaultFlow(service, query, delay)
-            } else {
-                UserResult(mock.response.toJson(), delay)
-            }
-        } else {
-            // Todo fix
-            val mock = mockService.getMockByName(service.id, "mockName")
-            val delay = getDelay(mock, service)
-            val result = checkTriggers(parsedQuery, mock, delay)
-            if (result.response == null) {
-                checkDefaultFlow(service, query, delay, mock)
-            } else {
-                result
+        return checkDefaultFlow(service, query, delay)
+    }
+
+    private fun List<TriggerDto>.match(document: Document, mockId: Long) = this
+        .filter { it.mockId == mockId }
+        .any { trigger ->
+            triggerDocumentMatcher.match(document, trigger)
+        }
+
+    private fun validateSchemaIfExist(
+        service: MockServiceDto,
+        document: Document,
+    ) {
+        service.schema?.let {
+            if (it.isNotEmpty()) {
+                documentValidator.validate(document, it)
             }
         }
     }
 
     private fun getDelay(mock: MockDto?, service: MockServiceDto) =
-        mock?.delay ?: service.delay ?: error("Unspecified delay")
+        mock?.delay ?: service.delay ?: 0
 
     private fun checkDefaultFlow(service: MockServiceDto, query: JsonNode, delay: Long): UserResult {
         return if (service.makeRealCall == true) {
@@ -69,33 +116,6 @@ class UserService(
         } else {
             error("Service with name ${service.name} doesn't contain suitable mock")
         }
-    }
-
-    private fun checkDefaultFlow(service: MockServiceDto, query: JsonNode, delay: Long, mock: MockDto): UserResult {
-        return when {
-            service.makeRealCall == true -> {
-                val response = redirectService.callRealService(service, query.toString())
-                UserResult(response, delay)
-            }
-
-            service.useDefaultMock == true -> {
-                UserResult(mock.response.toJson(), delay)
-            }
-
-            else -> throw NotFoundException("Mock with service id = ${service.id} and suitable body not found")
-        }
-    }
-
-    private fun checkTriggers(parsedQuery: String, mock: MockDto, delay: Long): UserResult {
-        val document = documentParser.parseDocument(parsedQuery)
-
-        val triggers = triggerService.getTriggers(mock.id)
-
-        val responseBody = triggers.firstOrNull { trigger ->
-            triggerDocumentMatcher.match(document, trigger)
-        }?.response
-
-        return UserResult(responseBody?.toJson(), delay)
     }
 
     private fun String.toJson() = objectMapper.readTree(this)

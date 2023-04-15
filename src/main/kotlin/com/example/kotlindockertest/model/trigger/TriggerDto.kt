@@ -6,19 +6,23 @@ import javax.persistence.*
 
 
 @Entity
-@Table(name = "trigger")
+@Table(
+    name = "trigger",
+    indexes = [
+        Index(name = "i_mock_id", columnList = "mockId"),
+        Index(name = "i_service_id", columnList = "serviceId"),
+    ]
+)
 open class TriggerDto(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open var id: Long,
 
-    @Lob
-    open var response: String,
-
     open var path: String,
 
     // Todo add index
     open var mockId: Long,
+    open var serviceId: Long,
 
     @Enumerated(EnumType.STRING)
     open var operation: OperationType,

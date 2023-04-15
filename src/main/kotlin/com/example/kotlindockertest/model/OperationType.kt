@@ -6,4 +6,5 @@ enum class OperationType {
     LESS,
     GREATER_OR_EQUAL,
     LESS_OR_EQUAL,
+    REGEX,
 }

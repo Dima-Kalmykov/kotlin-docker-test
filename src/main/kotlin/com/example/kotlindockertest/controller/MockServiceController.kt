@@ -4,6 +4,7 @@ import com.example.kotlindockertest.configuration.annotation.NotFoundApiResponse
 import com.example.kotlindockertest.configuration.annotation.SuccessfulApiResponse
 import com.example.kotlindockertest.model.StringIdResponse
 import com.example.kotlindockertest.model.service.MockServiceDto
+import com.example.kotlindockertest.model.service.MockServiceRequestDto
 import com.example.kotlindockertest.service.MockService
 import com.example.kotlindockertest.service.MockServiceHandler
 import com.example.kotlindockertest.utils.SERVICE_NOT_FOUND_DESCRIPTION
@@ -16,20 +17,23 @@ class MockServiceController(
     private val mockService: MockService,
 ) {
 
-    @GetMapping("/")
-    fun getServices(@RequestParam search: String) = mockServiceHandler.getServices(search)
+    @GetMapping
+    fun getServices(@RequestParam(defaultValue = "") search: String) = mockServiceHandler.getServices(search)
 
     // Todo кажется, что не нужен, есть /getService
     @GetMapping("/{id}/mocks")
     fun getMocks(@PathVariable id: Long) = mockService.getMocks(id)
+
+    @DeleteMapping("/{id}/mocks")
+    fun deleteMocks(@PathVariable id: Long) = mockService.deleteMocks(id)
 
     @GetMapping("/{id}")
     @SuccessfulApiResponse
     @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)
     fun getService(@PathVariable id: Long) = mockServiceHandler.getService(id)
 
-    @PostMapping("/")
-    fun addService(@RequestBody service: MockServiceDto): StringIdResponse {
+    @PostMapping
+    fun addService(@RequestBody service: MockServiceRequestDto): StringIdResponse {
         val createdServiceId = mockServiceHandler.addService(service)
 
         return StringIdResponse(createdServiceId)
@@ -40,7 +44,7 @@ class MockServiceController(
     @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)
     fun patchService(
         @PathVariable id: Long,
-        @RequestBody service: MockServiceDto,
+        @RequestBody service: MockServiceRequestDto,
     ) = mockServiceHandler.patchService(id, service)
 
     @DeleteMapping("/{id}")

@@ -69,25 +69,37 @@ class KotlinDockerTestApplicationTests {
 
         return """
             type Book {
-                id: ID!
                 name: String!
             }
             type Query {
-                books: [Book!]!
+                book: Book
             }
         """.trimIndent()
     }
+
+    private fun getSchema(): String {
+        return """
+      type Book {
+        name: String
+      }
+      type Query {
+        book: Book
+      }
+        """.trimIndent()
+    }
+
     @Test
     fun schema() {
         val parser = SchemaParser()
-        val str = getStr()
+        val str = getSchema()
         println(str.replace("\n", "\\n"))
         val parsedScheme: TypeDefinitionRegistry = parser.parse(str)
         val schema: GraphQLSchema = SchemaGenerator().makeExecutableSchema(parsedScheme, RuntimeWiring.MOCKED_WIRING)
         val graphQL: GraphQL = GraphQL.newGraphQL(schema).build()
 
-        val query = "query{users{name}}"
+        val query = "query{book{name}}"
         val result = graphQL.execute(query)
+        println(result)
 }
     @Test
     fun test() {
@@ -95,6 +107,40 @@ class KotlinDockerTestApplicationTests {
         println(beanProxy::class.jvmName)
         val a = 3
     }
+
+    @Test
+    fun generate() {
+        val rest = """
+            {
+                "data": {
+                    "book": {
+                        "title": "Harry Potter"
+                    }
+                }
+            }
+        """.trimIndent()
+    }
+
+    @Test
+    fun `schema e`() {
+        val scheme = """
+            
+        """.trimIndent().replace("\n", "")
+        val parseDocument = Parser().parseDocument(scheme)
+        println(parseDocument)
+        println(scheme.hashCode())
+        println(scheme.replace("\n", "\\n"))
+    }
+
+    @Test
+    fun `schema 2`() {
+        val query = "query {\n    book(id:123) {\n        name\n        test5\n    }\n}"
+        val replace = query.replace(" ", "").replace("\n", " ").replace(" ", "\n")
+
+println(replace)
+    }
+
+
 
 
     data class Address(val street: Long)
