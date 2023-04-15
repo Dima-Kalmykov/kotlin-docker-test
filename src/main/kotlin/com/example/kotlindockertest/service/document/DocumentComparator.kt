@@ -3,7 +3,7 @@ package com.example.kotlindockertest.service.document
 import graphql.language.Document
 import org.springframework.stereotype.Service
 
-private const val regexPattern = ", arguments=\\[.*?}]"
+private const val regexPattern = ", arguments=\\[.*?]"
 
 @Service
 class DocumentComparator {
