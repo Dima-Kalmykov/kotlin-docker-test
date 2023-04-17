@@ -89,13 +89,14 @@ class TestController(
 //        println(parsed)
 //        val document: Document = parser.parseDocument(parsed)
 //        println(document)
-        val service = MockServiceDto(
-            1, "", "http://localhost:8080/graphql", ZonedDateTime.now(),
-        )
-        val callRealService = redirectService.callRealService(service, query.toString())
-        println(callRealService)
-
-        return callRealService
+//        val service = MockServiceDto(
+//            1, "", "http://localhost:8080/graphql", ZonedDateTime.now(),
+//        )
+//        val callRealService = redirectService.callRealService(service, query.toString())
+//        println(callRealService)
+//
+//        return callRealService
+        return null
 //        return triggerDocumentMatcher.match(document, query)
     }
 

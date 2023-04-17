@@ -1,5 +1,6 @@
 package com.example.kotlindockertest.service
 
+import com.example.kotlindockertest.exception.AuthorizationException
 import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.exception.ServiceNotFoundException
 import com.example.kotlindockertest.model.service.MockServiceDto
@@ -63,9 +64,8 @@ class MockServiceHandler(
         }
     }
 
-    // Todo get service by name and check is expirationDate, if expired then replace
     @Transactional
-    fun addService(service: MockServiceRequestDto): Long {
+    fun addService(service: MockServiceRequestDto, username: String): Long {
         val existingService = mockServiceRepository.findByName(service.name)
 
         if (!existingService.isPresent) {
@@ -76,6 +76,7 @@ class MockServiceHandler(
                 expirationDate = service.expirationDate,
                 schema = service.schema,
                 delay = service.delay,
+                createdBy = username,
             )
             val savedService = mockServiceRepository.save(mappedService)
 
@@ -87,6 +88,7 @@ class MockServiceHandler(
         if (updatableService.isExpired()) {
             updatableService.apply {
                 fillServiceData(service)
+                this.createdBy = username
             }
 
             return updatableService.id!!
@@ -96,8 +98,12 @@ class MockServiceHandler(
     }
 
     @Transactional
-    fun patchService(id: Long, service: MockServiceRequestDto): MockServiceDto {
-        val updatedService = getService(id).apply {
+    fun patchService(id: Long, service: MockServiceRequestDto, username: String): MockServiceDto {
+        val updatedService = getService(id)
+        if (updatedService.createdBy != username) {
+            throw AuthorizationException()
+        }
+        updatedService.apply {
             fillServiceData(service)
         }
 
@@ -105,7 +111,11 @@ class MockServiceHandler(
     }
 
     @Transactional
-    fun deleteService(id: Long) {
+    fun deleteService(id: Long, username: String) {
+        val service = getService(id)
+        if (service.createdBy != username) {
+            throw AuthorizationException()
+        }
         mockRepository.deleteMocksByServiceId(id)
         mockServiceRepository.deleteById(id)
     }

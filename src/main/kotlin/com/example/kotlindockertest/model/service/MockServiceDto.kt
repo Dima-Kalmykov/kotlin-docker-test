@@ -17,6 +17,7 @@ open class MockServiceDto(
     open var location: String,
     open var expirationDate: ZonedDateTime? = null,
     open var delay: Long? = null,
+    open var createdBy: String,
     open var makeRealCall: Boolean? = null,
     @Transient
     open var mocks: List<MockDto> = emptyList(),

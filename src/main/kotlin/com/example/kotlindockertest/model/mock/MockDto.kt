@@ -23,6 +23,8 @@ open class MockDto(
     open var delay: Long? = null, // millis
     open var enable: Boolean = true,
 
+    open var createdBy: String,
+
     @Lob
     open var request: String,
 

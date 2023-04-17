@@ -1,5 +1,6 @@
 package com.example.kotlindockertest.service
 
+import com.example.kotlindockertest.exception.AuthorizationException
 import com.example.kotlindockertest.exception.MockNotFoundException
 import com.example.kotlindockertest.model.ActivateRequestDto
 import com.example.kotlindockertest.model.mock.MockDto
@@ -68,8 +69,7 @@ class MockService(
     }
 
     @Transactional
-    // Todo get mock and check is expirationDate, if expired then replace
-    fun addMock(mock: MockRequestDto): Long {
+    fun addMock(mock: MockRequestDto, username: String): Long {
         val mappedMock = MockDto(
             name = mock.name,
             expirationDate = mock.expirationDate,
@@ -84,6 +84,7 @@ class MockService(
                 .hashCode(),
             response = mock.response,
             serviceId = mock.serviceId,
+            createdBy = username,
         )
 
         val savedMock = mockRepository.save(mappedMock)
@@ -92,17 +93,25 @@ class MockService(
     }
 
     @Transactional
-    fun patchMock(id: Long, mock: MockRequestDto): MockDto {
-        val updatedMock = getMock(id).apply {
-            fillMockData(mock)
+    fun patchMock(id: Long, mock: MockRequestDto, username: String): MockDto {
+        val updatedMock = getMock(id)
+        if (updatedMock.createdBy != username) {
+            throw AuthorizationException()
         }
+
+        updatedMock.fillMockData(mock)
 
         return updatedMock
     }
 
     @Transactional
-    fun activateMock(id: Long, request: ActivateRequestDto): MockDto {
-        val updatedMock = getMock(id).apply {
+    fun activateMock(id: Long, request: ActivateRequestDto, username: String): MockDto {
+        val updatedMock = getMock(id)
+        if (updatedMock.createdBy != username) {
+            throw AuthorizationException()
+        }
+
+        updatedMock.apply {
             this.enable = request.enable
         }
 
@@ -110,7 +119,12 @@ class MockService(
     }
 
     @Transactional
-    fun deleteMock(id: Long) {
+    fun deleteMock(id: Long, username: String) {
+        val mock = getMock(id)
+        if (mock.createdBy != username) {
+            throw AuthorizationException()
+        }
+
         mockRepository.deleteById(id)
         triggerRepository.deleteTriggersByMockId(id)
     }

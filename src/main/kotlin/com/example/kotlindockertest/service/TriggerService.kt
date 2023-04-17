@@ -1,5 +1,6 @@
 package com.example.kotlindockertest.service
 
+import com.example.kotlindockertest.exception.AuthorizationException
 import com.example.kotlindockertest.exception.TriggerNotFoundException
 import com.example.kotlindockertest.model.ActivateRequestDto
 import com.example.kotlindockertest.model.trigger.TriggerDto
@@ -31,16 +32,22 @@ class TriggerService(
     }
 
     @Transactional
-    fun addTrigger(trigger: TriggerDto): Long {
+    fun addTrigger(trigger: TriggerDto, username: String): Long {
         triggerPathTokenizer.tokenize(trigger.path)
+        trigger.createdBy = username
         val savedTrigger = triggerRepository.save(trigger)
 
         return savedTrigger.id
     }
 
     @Transactional
-    fun activateTrigger(id: Long, request: ActivateRequestDto): TriggerDto {
-        val updatedTrigger = getTrigger(id).apply {
+    fun activateTrigger(id: Long, request: ActivateRequestDto, username: String): TriggerDto {
+        val updatedTrigger = getTrigger(id)
+        if (updatedTrigger.createdBy != username) {
+            throw AuthorizationException()
+        }
+
+        updatedTrigger.apply {
             this.enable = request.enable
         }
 
@@ -48,9 +55,14 @@ class TriggerService(
     }
 
     @Transactional
-    fun patchTrigger(id: Long, trigger: TriggerDto): TriggerDto {
+    fun patchTrigger(id: Long, trigger: TriggerDto, username: String): TriggerDto {
+        val updatedTrigger = getTrigger(id)
+        if (updatedTrigger.createdBy != username) {
+            throw AuthorizationException()
+        }
         triggerPathTokenizer.tokenize(trigger.path)
-        val updatedTrigger = getTrigger(id).apply {
+
+        updatedTrigger.apply {
             this.operation = trigger.operation
             this.valueType = trigger.valueType
             this.value = trigger.value
@@ -62,7 +74,11 @@ class TriggerService(
     }
 
     @Transactional
-    fun deleteTrigger(id: Long) {
+    fun deleteTrigger(id: Long, username: String) {
+        val trigger = getTrigger(id)
+        if (trigger.createdBy != username) {
+            throw AuthorizationException()
+        }
         triggerRepository.deleteById(id)
     }
 }

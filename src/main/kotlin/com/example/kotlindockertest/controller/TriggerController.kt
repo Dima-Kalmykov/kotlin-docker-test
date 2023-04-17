@@ -18,8 +18,11 @@ class TriggerController(private val triggerService: TriggerService) {
 
     // Todo foreign key to mock
     @PostMapping("/triggers")
-    fun addTrigger(@RequestBody trigger: TriggerDto): StringIdResponse {
-        val createdTriggerId = triggerService.addTrigger(trigger)
+    fun addTrigger(
+        @RequestAttribute username: String,
+        @RequestBody trigger: TriggerDto,
+        ): StringIdResponse {
+        val createdTriggerId = triggerService.addTrigger(trigger, username)
 
         return StringIdResponse(createdTriggerId)
     }
@@ -27,18 +30,20 @@ class TriggerController(private val triggerService: TriggerService) {
     @PutMapping("/triggers/{id}")
     fun patchTrigger(
         @PathVariable id: Long,
+        @RequestAttribute username: String,
         @RequestBody trigger: TriggerDto,
-    ) = triggerService.patchTrigger(id, trigger)
+    ) = triggerService.patchTrigger(id, trigger, username)
 
     @PatchMapping("/triggers/{id}")
     fun activateTriggers(
         @PathVariable id: Long,
+        @RequestAttribute username: String,
         @RequestBody request: ActivateRequestDto,
-    ) = triggerService.activateTrigger(id, request)
+    ) = triggerService.activateTrigger(id, request, username)
 
     @DeleteMapping("/triggers/{id}")
-    fun deleteTrigger(@PathVariable id: Long): StringIdResponse {
-        triggerService.deleteTrigger(id)
+    fun deleteTrigger(@PathVariable id: Long,         @RequestAttribute username: String): StringIdResponse {
+        triggerService.deleteTrigger(id, username)
 
         return StringIdResponse(id)
     }

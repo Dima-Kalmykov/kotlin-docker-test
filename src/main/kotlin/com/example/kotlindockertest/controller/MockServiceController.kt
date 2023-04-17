@@ -3,7 +3,6 @@ package com.example.kotlindockertest.controller
 import com.example.kotlindockertest.configuration.annotation.NotFoundApiResponse
 import com.example.kotlindockertest.configuration.annotation.SuccessfulApiResponse
 import com.example.kotlindockertest.model.StringIdResponse
-import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.model.service.MockServiceRequestDto
 import com.example.kotlindockertest.service.MockService
 import com.example.kotlindockertest.service.MockServiceHandler
@@ -33,8 +32,11 @@ class MockServiceController(
     fun getService(@PathVariable id: Long) = mockServiceHandler.getService(id)
 
     @PostMapping
-    fun addService(@RequestBody service: MockServiceRequestDto): StringIdResponse {
-        val createdServiceId = mockServiceHandler.addService(service)
+    fun addService(
+        @RequestAttribute username: String,
+        @RequestBody service: MockServiceRequestDto,
+        ): StringIdResponse {
+        val createdServiceId = mockServiceHandler.addService(service, username)
 
         return StringIdResponse(createdServiceId)
     }
@@ -44,12 +46,13 @@ class MockServiceController(
     @NotFoundApiResponse(description = SERVICE_NOT_FOUND_DESCRIPTION)
     fun patchService(
         @PathVariable id: Long,
+        @RequestAttribute username: String,
         @RequestBody service: MockServiceRequestDto,
-    ) = mockServiceHandler.patchService(id, service)
+    ) = mockServiceHandler.patchService(id, service, username)
 
     @DeleteMapping("/{id}")
-    fun deleteService(@PathVariable id: Long): StringIdResponse {
-        mockServiceHandler.deleteService(id)
+    fun deleteService(@PathVariable id: Long, @RequestAttribute username: String): StringIdResponse {
+        mockServiceHandler.deleteService(id, username)
 
         return StringIdResponse(id)
     }

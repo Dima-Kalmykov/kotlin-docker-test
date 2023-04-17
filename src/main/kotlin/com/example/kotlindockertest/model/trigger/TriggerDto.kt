@@ -24,6 +24,8 @@ open class TriggerDto(
     open var mockId: Long,
     open var serviceId: Long,
 
+    open var createdBy: String,
+
     @Enumerated(EnumType.STRING)
     open var operation: OperationType,
 
