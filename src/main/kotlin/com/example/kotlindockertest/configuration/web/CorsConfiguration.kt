@@ -8,6 +8,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @Configuration(proxyBeanMethods = false)
 class CorsConfiguration : WebMvcConfigurer {
 
+    companion object {
+        fun String.toStr() = this
+    }
+
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
             .allowedMethods(CorsConfiguration.ALL)

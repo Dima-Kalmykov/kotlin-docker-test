@@ -17,7 +17,7 @@ class MockCleaner(
     companion object : KLogging()
 
     @Transactional
-    @Scheduled(timeUnit = TimeUnit.MINUTES, fixedDelay = 5)
+    @Scheduled(timeUnit = TimeUnit.MINUTES, fixedDelay = 30)
     fun removeMocksByTtl() {
         logger.info { "Start cleaning mocks..." }
         val mocksToBeDeleted = mockRepository.getMocksToBeDeleted()

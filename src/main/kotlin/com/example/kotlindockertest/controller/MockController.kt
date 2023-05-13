@@ -5,7 +5,7 @@ import com.example.kotlindockertest.configuration.annotation.SuccessfulApiRespon
 import com.example.kotlindockertest.model.ActivateRequestDto
 import com.example.kotlindockertest.model.StringIdResponse
 import com.example.kotlindockertest.model.mock.MockRequestDto
-import com.example.kotlindockertest.service.MockService
+import com.example.kotlindockertest.service.mock.MockService
 import com.example.kotlindockertest.utils.MOCK_NOT_FOUND_DESCRIPTION
 import org.springframework.web.bind.annotation.*
 
@@ -16,7 +16,10 @@ class MockController(private val mockService: MockService) {
     @GetMapping("/{id}")
     @SuccessfulApiResponse
     @NotFoundApiResponse(description = MOCK_NOT_FOUND_DESCRIPTION)
-    fun getMock(@PathVariable id: Long) = mockService.getMock(id)
+    fun getMock(
+        @PathVariable id: Long,
+        @RequestAttribute username: String,
+    ) = mockService.getMock(id, username, false)
 
     // Todo foreign key service id
     @PostMapping
@@ -43,7 +46,7 @@ class MockController(private val mockService: MockService) {
         @PathVariable id: Long,
         @RequestAttribute username: String,
         @RequestBody mock: MockRequestDto,
-        ) = mockService.patchMock(id, mock, username)
+    ) = mockService.patchMock(id, mock, username)
 
     @DeleteMapping("/{id}")
     fun deleteMock(@PathVariable id: Long, @RequestAttribute username: String): StringIdResponse {

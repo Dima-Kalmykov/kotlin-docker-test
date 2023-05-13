@@ -8,6 +8,7 @@ import com.example.kotlindockertest.model.service.MockServiceRequestDto
 import com.example.kotlindockertest.model.service.MockServiceShortInfoDto
 import com.example.kotlindockertest.repository.MockRepository
 import com.example.kotlindockertest.repository.MockServiceRepository
+import com.example.kotlindockertest.repository.TriggerRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
@@ -16,13 +17,21 @@ import java.time.ZonedDateTime
 class MockServiceHandler(
     private val mockServiceRepository: MockServiceRepository,
     private val mockRepository: MockRepository,
+    private val triggerRepository: TriggerRepository,
 ) {
 
     @Transactional(readOnly = true)
-    fun getServices(search: String): List<MockServiceShortInfoDto> {
+    fun isExist(serviceName: String): Boolean {
+        return mockServiceRepository.findByName(serviceName).isPresent
+    }
+
+    @Transactional(readOnly = true)
+    fun getServices(search: String, username: String): List<MockServiceShortInfoDto> {
         val services = mockServiceRepository
             .getServices(search.uppercase())
             .filter { !it.isExpired() }
+            .filter { it.createdBy == username }
+            .sortedBy { it.id }
 
         services.forEach { service ->
             service.mocksCount = mockRepository.countByServiceId(service.id)
@@ -48,17 +57,18 @@ class MockServiceHandler(
 
     // Todo переделать через join
     @Transactional(readOnly = true)
-    fun getService(id: Long): MockServiceDto {
+    fun getService(id: Long, username: String): MockServiceDto {
         val service = mockServiceRepository.findById(id)
 
         if (!service.isPresent) {
             throw ServiceNotFoundException(id)
         }
 
-        if (service.get().isExpired()) {
-            throw ServiceNotFoundException(id)
-        } else {
-            return service.get().apply {
+        return when {
+            service.get().isExpired() -> throw ServiceNotFoundException(id)
+            service.get().createdBy != username -> throw AuthorizationException()
+
+            else -> service.get().apply {
                 this.mocks = mockRepository.getAllByServiceId(id)
             }
         }
@@ -67,6 +77,10 @@ class MockServiceHandler(
     @Transactional
     fun addService(service: MockServiceRequestDto, username: String): Long {
         val existingService = mockServiceRepository.findByName(service.name)
+
+        if (service.historyStorageDuration > 1440 * 60) {
+            error("History can't be stored for more than 60 days")
+        }
 
         if (!existingService.isPresent) {
             val mappedService = MockServiceDto(
@@ -77,6 +91,8 @@ class MockServiceHandler(
                 schema = service.schema,
                 delay = service.delay,
                 createdBy = username,
+                historyStorageDuration = service.historyStorageDuration,
+                storeHistory = service.storeHistory,
             )
             val savedService = mockServiceRepository.save(mappedService)
 
@@ -99,7 +115,10 @@ class MockServiceHandler(
 
     @Transactional
     fun patchService(id: Long, service: MockServiceRequestDto, username: String): MockServiceDto {
-        val updatedService = getService(id)
+        val updatedService = getService(id, username)
+        if (service.historyStorageDuration > 1440 * 60) {
+            error("History can't be stored for more than 60 days")
+        }
         if (updatedService.createdBy != username) {
             throw AuthorizationException()
         }
@@ -112,9 +131,13 @@ class MockServiceHandler(
 
     @Transactional
     fun deleteService(id: Long, username: String) {
-        val service = getService(id)
+        val service = getService(id, username)
         if (service.createdBy != username) {
             throw AuthorizationException()
+        }
+        val mocksToBeDeleted = mockRepository.getAllByServiceId(id)
+        mocksToBeDeleted.forEach {
+            triggerRepository.deleteTriggersByMockId(it.id!!)
         }
         mockRepository.deleteMocksByServiceId(id)
         mockServiceRepository.deleteById(id)
@@ -127,6 +150,8 @@ class MockServiceHandler(
         this.makeRealCall = service.makeRealCall
         this.delay = service.delay
         this.schema = service.schema
+        this.historyStorageDuration = service.historyStorageDuration
+        this.storeHistory = service.storeHistory
     }
 
     private fun MockServiceDto.isExpired() =

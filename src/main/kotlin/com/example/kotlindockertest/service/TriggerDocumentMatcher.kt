@@ -35,7 +35,6 @@ class TriggerDocumentMatcher(
 
     private fun checkArgument(field: Field, tokens: List<String>, trigger: TriggerDto): Boolean {
         val argument = fieldSearcher.getArgument(field, tokens.last())
-        println(argument)
         return if (argument != null) {
             triggerValueMatcher.match(argument, trigger)
         } else {

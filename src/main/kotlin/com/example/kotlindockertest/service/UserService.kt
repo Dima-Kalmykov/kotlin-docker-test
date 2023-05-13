@@ -1,16 +1,22 @@
 package com.example.kotlindockertest.service
 
+import com.example.kotlindockertest.exception.RedirectException
 import com.example.kotlindockertest.model.UserResult
+import com.example.kotlindockertest.model.history.HistoryEventDto
 import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.service.MockServiceDto
 import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.service.document.DocumentComparator
+import com.example.kotlindockertest.service.history.HistoryService
+import com.example.kotlindockertest.service.mock.MockRandomFieldsValidator
+import com.example.kotlindockertest.service.mock.MockService
 import com.example.kotlindockertest.service.schema.DocumentValidator
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.language.Document
 import graphql.parser.Parser
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
 
 @Service
 class UserService(
@@ -24,33 +30,123 @@ class UserService(
     private val documentValidator: DocumentValidator,
     private val documentParser: Parser,
     private val documentComparator: DocumentComparator,
+    private val randomFieldsValidator: MockRandomFieldsValidator,
+    private val historyService: HistoryService,
 ) {
 
     fun getResponse(
         serviceName: String,
         query: JsonNode,
     ): UserResult {
+        val historyEventDto = HistoryEventDto()
+
         val service = mockServiceHandler.getServiceByName(serviceName)
-        println("Input query = ${query}")
-        val parsedQuery = graphQLQueryParser.parseForDocument(query)
-        println("Parsed = $parsedQuery")
-        val document = documentParser.parseDocument(parsedQuery)
+        if (service.storeHistory == true) {
+            historyEventDto.serviceId = service.id
+            historyEventDto.expirationDate = ZonedDateTime.now().plusMinutes(service.historyStorageDuration)
+            historyEventDto.createdAt = ZonedDateTime.now()
+        }
+        val document: Document?
+        val mock: MockDto?
+        try {
+            val parsedQuery = graphQLQueryParser.parseForDocument(query)
+            println("Input query = $parsedQuery")
 
-//        validateSchemaIfExist(service, document)
+            if (service.storeHistory == true) {
+                historyEventDto.request = parsedQuery
+            }
+            document = documentParser.parseDocument(parsedQuery)
 
-        val mock = mockService.getMockByRequestHash(
-            service.id!!,
-            graphQLQueryParser.parseForHashCode(query).hashCode(),
-        )
+            validateSchemaIfExist(service, document)
+
+            mock = mockService.getMockByRequestHash(
+                service.id!!,
+                graphQLQueryParser.parseForHashCode(query).hashCode(),
+            )
+        } catch (exception: RuntimeException) {
+            if (service.storeHistory == true) {
+                historyEventDto.isError = true
+                historyEventDto.response = exception.message!!
+                historyService.saveHistoryEvent(historyEventDto)
+            }
+            throw exception
+        }
 
         val delay = getDelay(mock, service)
 
         return when {
-            mock != null && !mock.enable -> checkDefaultFlow(service, query, delay)
+            mock != null && !mock.enable -> {
+                try {
+                    val userResult = checkDefaultFlow(service, query, delay)
+                    if (service.storeHistory == true) {
+                        historyEventDto.response = userResult.response.toString()
+                        historyEventDto.redirected = true
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
 
-            mock != null -> UserResult(mock.response.toJson(), delay)
+                    userResult
+                } catch (redirectException: RedirectException) {
+                    if (service.storeHistory == true) {
+                        historyEventDto.redirected = true
+                        historyEventDto.isError = true
+                        historyEventDto.response = redirectException.message!!
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
+                    throw redirectException
+                } catch (exception: Exception) {
+                    if (service.storeHistory == true) {
+                        historyEventDto.isError = true
+                        historyEventDto.response = exception.message!!
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
+                    throw exception
+                }
+            }
 
-            else -> checkTriggers(service, document, query, delay)
+            mock != null -> {
+                try {
+                    val jsonResponse = randomFieldsValidator.validateRandomFields(mock.response)
+                    val userResult = UserResult(jsonResponse, delay)
+                    if (service.storeHistory == true) {
+                        historyEventDto.response = userResult.response.toString()
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
+                    userResult
+                } catch (e: RuntimeException) {
+                    if (service.storeHistory == true) {
+                        historyEventDto.response = e.message!!
+                        historyEventDto.isError = true
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
+                    throw e
+                }
+            }
+
+            else -> {
+                try {
+                    val userResult = checkTriggers(service, document!!, query, delay)
+                    if (service.storeHistory == true) {
+                        historyEventDto.response = userResult.response.toString()
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
+                    userResult
+                } catch (redirectException: RedirectException) {
+                    if (service.storeHistory == true) {
+                        historyEventDto.redirected = true
+                        historyEventDto.isError = true
+                        historyEventDto.response = redirectException.message!!
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
+                    throw redirectException
+                } catch (exception: RuntimeException) {
+                    if (service.storeHistory == true) {
+                        historyEventDto.isError = true
+                        historyEventDto.response = exception.message!!
+                        historyService.saveHistoryEvent(historyEventDto)
+                    }
+                    throw exception
+                }
+            }
         }
     }
 
@@ -60,23 +156,23 @@ class UserService(
         query: JsonNode,
         delay: Long,
     ): UserResult {
-        val triggers = triggerService.getTriggersByServiceId(service.id!!)
+        val mocks = mockService.getMocks(service.id!!, "", true)
+        val triggers = mocks.flatMap { mock -> triggerService.getTriggers(mock.id!!) }
         val visited = triggers.associate { it.mockId to false }.toMutableMap()
 
         triggers.forEach {
             val mockId = it.mockId
 
             if (visited[mockId] == false) {
-                val mockByTrigger = mockService.getMock(mockId)
+                val mockByTrigger = mockService.getMock(mockId, "", true)
 
                 val mockDocument = documentParser.parseDocument(mockByTrigger.request)
-                println("Doc = $document")
-                println("MockDO = $mockDocument")
-                println("-".repeat(100))
                 if (documentComparator.areEqual(document, mockDocument)) {
-                    println("Yes, equals")
                     if (triggers.match(document, mockId)) {
-                        return UserResult(mockByTrigger.response.toJson(), delay)
+                        val jsonResponse = randomFieldsValidator.validateRandomFields(mockByTrigger.response)
+                        UserResult(jsonResponse, delay)
+
+                        return UserResult(jsonResponse, delay)
                     } else {
                         visited[mockId] = true
                     }

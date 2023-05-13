@@ -11,7 +11,7 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
 
     @Query(
         """
-        SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location, s.expirationDate) 
+        SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location, s.createdBy, s.expirationDate) 
         FROM MockServiceDto s
         WHERE UPPER(s.name) LIKE %?1% OR UPPER(s.location) LIKE %?1%
         """
@@ -31,7 +31,7 @@ interface MockServiceRepository : CrudRepository<MockServiceDto, Long> {
 
     @Query(
         """
-            SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location, s.expirationDate) 
+            SELECT new com.example.kotlindockertest.model.service.MockServiceShortInfoDto(s.id, s.name, s.location, s.createdBy, s.expirationDate) 
             FROM MockServiceDto s
             WHERE s.expirationDate < CURRENT_TIMESTAMP()
         """

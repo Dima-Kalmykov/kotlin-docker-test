@@ -7,6 +7,7 @@ import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.repository.TriggerRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.FileInputStream
 
 @Service
 class TriggerService(
@@ -16,13 +17,9 @@ class TriggerService(
 
     @Transactional(readOnly = true)
     fun getTriggers(mockId: Long): List<TriggerDto> {
-        return triggerRepository.getTriggers(mockId)
+        return triggerRepository.getTriggers(mockId).sortedBy { it.id }
     }
 
-    @Transactional(readOnly = true)
-    fun getTriggersByServiceId(serviceId: Long): List<TriggerDto> {
-        return triggerRepository.findAllByServiceId(serviceId)
-    }
 
     @Transactional(readOnly = true)
     fun getTrigger(id: Long): TriggerDto {
@@ -64,10 +61,8 @@ class TriggerService(
 
         updatedTrigger.apply {
             this.operation = trigger.operation
-            this.valueType = trigger.valueType
             this.value = trigger.value
             this.enable = trigger.enable
-            this.serviceId = trigger.serviceId
         }
 
         return updatedTrigger

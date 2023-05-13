@@ -19,13 +19,16 @@ class MockServiceCleaner(
     companion object : KLogging()
 
     @Transactional
-    @Scheduled(timeUnit = TimeUnit.MINUTES, fixedDelay = 1)
+    @Scheduled(timeUnit = TimeUnit.HOURS, fixedDelay = 1)
     fun removeServicesByTtl() {
         logger.info { "Start cleaning services..." }
         val servicesToBeDeleted = mockServiceRepository.getServicesToBeDeleted()
         servicesToBeDeleted.forEach { service ->
+            val mocks = mockRepository.getAllByServiceId(service.id)
+            mocks.forEach {  mock ->
+                triggerRepository.deleteTriggersByMockId(mock.id!!)
+            }
             mockRepository.deleteMocksByServiceId(service.id)
-            triggerRepository.deleteTriggersByServiceId(service.id)
         }
 
         mockServiceRepository.deleteServicesByTtl()

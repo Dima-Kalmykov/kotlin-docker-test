@@ -6,6 +6,7 @@ import com.example.kotlindockertest.model.trigger.TriggerDto
 import graphql.language.Argument
 import graphql.language.FloatValue
 import graphql.language.IntValue
+import graphql.language.StringValue
 import org.springframework.stereotype.Service
 
 @Service
@@ -15,7 +16,11 @@ class TriggerFloatMatcher : TriggerMatcher {
 
     override fun match(argument: Argument, trigger: TriggerDto): Boolean {
         val argumentValue = try {
-            (argument.value as FloatValue).value
+            if (argument.value is StringValue) {
+                (argument.value as StringValue).value.toBigDecimal()
+            } else {
+                (argument.value as FloatValue).value
+            }
         } catch (exception: ClassCastException) {
             (argument.value as IntValue).value.toBigDecimal()
         }

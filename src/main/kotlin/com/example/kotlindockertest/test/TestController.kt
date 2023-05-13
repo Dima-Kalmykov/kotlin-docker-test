@@ -49,6 +49,7 @@ class TestController(
         @RequestParam(defaultValue = "true") test: Boolean
     ) {
         println(test)
+        error("123")
         allRequestParams.forEach { (k, v) ->
             println("[$k: $v]")
         }

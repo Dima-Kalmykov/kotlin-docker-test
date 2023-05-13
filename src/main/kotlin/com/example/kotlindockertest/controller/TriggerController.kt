@@ -11,17 +11,23 @@ import org.springframework.web.bind.annotation.*
 class TriggerController(private val triggerService: TriggerService) {
 
     @GetMapping("/mocks/{mockId}/triggers")
-    fun getTriggers(@PathVariable mockId: Long) = triggerService.getTriggers(mockId)
+    fun getTriggers(
+        @PathVariable mockId: Long,
+        @RequestAttribute username: String,
+    ) = triggerService.getTriggers(mockId)
 
     @GetMapping("/triggers/{id}")
-    fun getTrigger(@PathVariable id: Long) = triggerService.getTrigger(id)
+    fun getTrigger(
+        @PathVariable id: Long,
+        @RequestAttribute username: String,
+    ) = triggerService.getTrigger(id)
 
     // Todo foreign key to mock
     @PostMapping("/triggers")
     fun addTrigger(
         @RequestAttribute username: String,
         @RequestBody trigger: TriggerDto,
-        ): StringIdResponse {
+    ): StringIdResponse {
         val createdTriggerId = triggerService.addTrigger(trigger, username)
 
         return StringIdResponse(createdTriggerId)
@@ -42,7 +48,7 @@ class TriggerController(private val triggerService: TriggerService) {
     ) = triggerService.activateTrigger(id, request, username)
 
     @DeleteMapping("/triggers/{id}")
-    fun deleteTrigger(@PathVariable id: Long,         @RequestAttribute username: String): StringIdResponse {
+    fun deleteTrigger(@PathVariable id: Long, @RequestAttribute username: String): StringIdResponse {
         triggerService.deleteTrigger(id, username)
 
         return StringIdResponse(id)

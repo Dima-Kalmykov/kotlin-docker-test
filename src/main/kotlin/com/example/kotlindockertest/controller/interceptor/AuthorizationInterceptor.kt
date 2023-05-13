@@ -1,7 +1,9 @@
 package com.example.kotlindockertest.controller.interceptor
 
+import com.example.kotlindockertest.exception.JWTTokenException
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KLogging
+import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import java.util.*
 import javax.servlet.http.HttpServletRequest
@@ -15,18 +17,41 @@ class AuthorizationInterceptor : HandlerInterceptor {
     companion object : KLogging()
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        val authorizationHeader = request.getHeader("Authorization") ?: return true
+        val authorizationHeader = request.getHeader("Authorization")
 
-        val token = authorizationHeader.drop(7)
-        val payloadChunk = token.split(".")[1]
-        val payload = String(decoder.decode(payloadChunk))
+        if (request.method == RequestMethod.HEAD.name) {
+            return true
+        }
 
-        val jsonNode = mapper.readTree(payload)
-        val username = jsonNode.get("user").toString().trim('\"')
+//        request.setAttribute("username", "Dima")
+//        return true
 
-        logger.info { "Username = $username" }
+        if ("/mocker/" in request.requestURI ||
+            "/error" in request.requestURI ||
+            "/swagger-ui" in request.requestURI ||
+            "/api-docs" in request.requestURI) {
+            return true
+        }
 
-        request.setAttribute("username", username)
-        return true
+        if (authorizationHeader == null) {
+            throw JWTTokenException("Authorization header is not presented for ${request.method} request")
+        }
+
+        return try {
+            val token = authorizationHeader.drop(7)
+            val payloadChunk = token.split(".")[1]
+            val payload = String(decoder.decode(payloadChunk))
+
+            val jsonNode = mapper.readTree(payload)
+            val username = jsonNode.get("user").toString().trim('\"')
+
+            logger.info { "Username = $username" }
+
+            request.setAttribute("username", username)
+            true
+        } catch (ex: Exception) {
+            println("Error: ${ex.message}")
+            throw JWTTokenException("Invalid JWT token")
+        }
     }
 }

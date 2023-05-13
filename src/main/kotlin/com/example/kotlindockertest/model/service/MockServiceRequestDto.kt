@@ -10,4 +10,6 @@ open class MockServiceRequestDto(
     open var delay: Long? = null,
     open var makeRealCall: Boolean? = null,
     open var schema: String? = null,
+    open var historyStorageDuration: Long = 1440 * 30,
+    open var storeHistory: Boolean? = null,
 )

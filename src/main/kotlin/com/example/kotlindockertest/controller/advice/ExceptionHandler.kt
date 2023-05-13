@@ -1,6 +1,7 @@
 package com.example.kotlindockertest.controller.advice
 
 import com.example.kotlindockertest.exception.AuthorizationException
+import com.example.kotlindockertest.exception.JWTTokenException
 import com.example.kotlindockertest.exception.NotFoundException
 import com.example.kotlindockertest.model.StringErrorResponse
 import org.postgresql.util.PSQLException
@@ -48,6 +49,16 @@ class ExceptionHandler {
         return ResponseEntity(
             StringErrorResponse(errorMessage),
             HttpStatus.FORBIDDEN,
+        )
+    }
+
+    @ExceptionHandler(JWTTokenException::class)
+    fun handleJWTTokenException(ex: JWTTokenException): ResponseEntity<StringErrorResponse> {
+        val errorMessage = requireNotNull(ex.message) { "Error message can't be null" }
+
+        return ResponseEntity(
+            StringErrorResponse(errorMessage),
+            HttpStatus.UNAUTHORIZED,
         )
     }
 }

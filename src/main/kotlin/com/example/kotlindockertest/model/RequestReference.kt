@@ -3,11 +3,11 @@ package com.example.kotlindockertest.model
 import javax.persistence.*
 
 
-@Entity
-@Table(name = "request_reference")
+//@Entity
+//@Table(name = "request_reference")
 open class RequestReference(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     open var id: Long,
 
     open var responsePath: String,

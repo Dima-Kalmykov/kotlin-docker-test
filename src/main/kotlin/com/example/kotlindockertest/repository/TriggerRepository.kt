@@ -11,14 +11,13 @@ interface TriggerRepository : CrudRepository<TriggerDto, Long> {
 
     @Query(
         """
-        SELECT new com.example.kotlindockertest.model.trigger.TriggerDto(t.id, t.path, t.mockId, t.serviceId, t.createdBy, t.operation, t.valueType, t.value, t.enable) 
+        SELECT new com.example.kotlindockertest.model.trigger.TriggerDto(t.id, t.path, t.mockId, t.createdBy, t.operation, t.value, t.enable) 
         FROM TriggerDto t
         WHERE t.mockId = ?1
         """
     )
     fun getTriggers(mockId: Long): List<TriggerDto>
 
-    fun findAllByServiceId(serviceId: Long): List<TriggerDto>
 
     @Modifying
     @Query(
@@ -28,13 +27,4 @@ interface TriggerRepository : CrudRepository<TriggerDto, Long> {
         """
     )
     fun deleteTriggersByMockId(mockId: Long)
-
-    @Modifying
-    @Query(
-        """
-            DELETE FROM TriggerDto t 
-            WHERE t.serviceId = ?1
-        """
-    )
-    fun deleteTriggersByServiceId(serviceId: Long)
 }
