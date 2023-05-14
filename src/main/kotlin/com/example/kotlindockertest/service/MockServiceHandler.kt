@@ -9,6 +9,7 @@ import com.example.kotlindockertest.model.service.MockServiceShortInfoDto
 import com.example.kotlindockertest.repository.MockRepository
 import com.example.kotlindockertest.repository.MockServiceRepository
 import com.example.kotlindockertest.repository.TriggerRepository
+import com.example.kotlindockertest.service.schema.SchemaValidator
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
@@ -18,6 +19,7 @@ class MockServiceHandler(
     private val mockServiceRepository: MockServiceRepository,
     private val mockRepository: MockRepository,
     private val triggerRepository: TriggerRepository,
+    private val schemaValidator: SchemaValidator,
 ) {
 
     @Transactional(readOnly = true)
@@ -78,6 +80,9 @@ class MockServiceHandler(
     fun addService(service: MockServiceRequestDto, username: String): Long {
         val existingService = mockServiceRepository.findByName(service.name)
 
+        if (!service.schema.isNullOrEmpty() && !service.schema.isNullOrBlank()) {
+            schemaValidator.validate(service.schema!!)
+        }
         if (service.historyStorageDuration > 1440 * 60) {
             error("History can't be stored for more than 60 days")
         }
@@ -115,6 +120,9 @@ class MockServiceHandler(
 
     @Transactional
     fun patchService(id: Long, service: MockServiceRequestDto, username: String): MockServiceDto {
+        if (!service.schema.isNullOrEmpty() && !service.schema.isNullOrBlank()) {
+            schemaValidator.validate(service.schema!!)
+        }
         val updatedService = getService(id, username)
         if (service.historyStorageDuration > 1440 * 60) {
             error("History can't be stored for more than 60 days")
