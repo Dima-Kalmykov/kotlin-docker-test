@@ -1,15 +1,33 @@
 server:
-  port: 8081
+  port: 8080
+  error:
+    include-message: always
+
+spring:
+  sql:
+    init:
+      encoding: UTF8
+  datasource:
+    username: ${DB_USER:postgres}
+#    password: postgres
+    password:
+#    url: jdbc:postgresql://localhost:5432/postgres?characterEncoding=UTF-8
+    url: ${DB_URL:jdbc:postgresql://78.24.220.57:5432/postgres?characterEncoding=UTF8}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    root: info
 
 management:
   endpoints:
     web:
       exposure:
         include: health,prometheus
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-    distribution:
-      percentiles-histogram:
-        "[http.server.requests]": true
