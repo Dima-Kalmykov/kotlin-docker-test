@@ -23,8 +23,12 @@ class UserController(private val userService: UserService) {
             userResult = userService.getResponse(serviceName, query)
         }
 
+        val timeToSleep = userResult.requiredDelay - time / 1000
+        println("Required delay = ${userResult.requiredDelay}")
+        println("Execution time = $time")
+        println("Will sleep for $timeToSleep seconds")
         // Todo use coroutines
-        TimeUnit.SECONDS.sleep(maxOf(userResult.requiredDelay - time, 0))
+        TimeUnit.SECONDS.sleep(maxOf(timeToSleep, 0))
 
         return userResult.response
     }

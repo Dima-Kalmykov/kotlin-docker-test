@@ -126,10 +126,11 @@ class UserService(
                 try {
                     val userResult = checkTriggers(service, document!!, query, delay)
                     if (service.storeHistory == true) {
-                        historyEventDto.response = userResult.response.toString()
+                        historyEventDto.response = userResult.first.response.toString()
+                        historyEventDto.redirected = userResult.second
                         historyService.saveHistoryEvent(historyEventDto)
                     }
-                    userResult
+                    userResult.first
                 } catch (redirectException: RedirectException) {
                     if (service.storeHistory == true) {
                         historyEventDto.redirected = true
@@ -155,7 +156,7 @@ class UserService(
         document: Document,
         query: JsonNode,
         delay: Long,
-    ): UserResult {
+    ): Pair<UserResult, Boolean> {
         val mocks = mockService.getMocks(service.id!!, "", true)
         val triggers = mocks.flatMap { mock -> triggerService.getTriggers(mock.id!!) }
         val visited = triggers.associate { it.mockId to false }.toMutableMap()
@@ -172,7 +173,7 @@ class UserService(
                         val jsonResponse = randomFieldsValidator.validateRandomFields(mockByTrigger.response)
                         UserResult(jsonResponse, delay)
 
-                        return UserResult(jsonResponse, delay)
+                        return UserResult(jsonResponse, delay) to false
                     } else {
                         visited[mockId] = true
                     }
@@ -182,7 +183,7 @@ class UserService(
             }
         }
 
-        return checkDefaultFlow(service, query, delay)
+        return checkDefaultFlow(service, query, delay) to true
     }
 
     private fun List<TriggerDto>.match(document: Document, mockId: Long) = this

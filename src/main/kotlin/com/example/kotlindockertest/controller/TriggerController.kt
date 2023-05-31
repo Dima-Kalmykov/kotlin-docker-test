@@ -1,10 +1,15 @@
 package com.example.kotlindockertest.controller
 
+import com.example.kotlindockertest.exception.TriggerException
 import com.example.kotlindockertest.model.ActivateRequestDto
+import com.example.kotlindockertest.model.StringErrorResponse
 import com.example.kotlindockertest.model.StringIdResponse
 import com.example.kotlindockertest.model.trigger.TriggerDto
 import com.example.kotlindockertest.service.TriggerService
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.print.DocFlavor.STRING
 
 @RestController
 @RequestMapping("/graphql")
@@ -27,10 +32,14 @@ class TriggerController(private val triggerService: TriggerService) {
     fun addTrigger(
         @RequestAttribute username: String,
         @RequestBody trigger: TriggerDto,
-    ): StringIdResponse {
-        val createdTriggerId = triggerService.addTrigger(trigger, username)
+    ): ResponseEntity<StringIdResponse> {
+        return try {
+            val createdTriggerId = triggerService.addTrigger(trigger, username)
 
-        return StringIdResponse(createdTriggerId)
+            ResponseEntity.ok(StringIdResponse(createdTriggerId))
+        } catch (ex: Exception) {
+            throw TriggerException(ex.message)
+        }
     }
 
     @PutMapping("/triggers/{id}")

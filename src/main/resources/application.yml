@@ -8,11 +8,11 @@ spring:
     init:
       encoding: UTF8
   datasource:
-    username: postgres
+    username: ${DB_USER:postgres}
 #    password: postgres
-    password: asldjk23
+    password:
 #    url: jdbc:postgresql://localhost:5432/postgres?characterEncoding=UTF-8
-    url: jdbc:postgresql://78.24.220.57:5432/postgres?characterEncoding=UTF8
+    url: ${DB_URL:jdbc:postgresql://78.24.220.57:5432/postgres?characterEncoding=UTF8}
   jpa:
     hibernate:
       ddl-auto: update

@@ -21,11 +21,16 @@ class RedirectService {
         }
 
         return try {
-            restTemplate.postForObject(
+            val json = restTemplate.postForObject(
                 buildUrl(service),
                 HttpEntity(body, headers),
                 JsonNode::class.java,
             )
+            if (json?.get("errors") != null) {
+                error("redirect response with error: $json")
+            }
+
+            json
         } catch (exception: RuntimeException) {
             throw RedirectException(exception.message!!)
         }

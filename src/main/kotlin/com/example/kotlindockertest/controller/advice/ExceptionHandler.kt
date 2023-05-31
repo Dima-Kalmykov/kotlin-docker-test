@@ -3,6 +3,7 @@ package com.example.kotlindockertest.controller.advice
 import com.example.kotlindockertest.exception.AuthorizationException
 import com.example.kotlindockertest.exception.JWTTokenException
 import com.example.kotlindockertest.exception.NotFoundException
+import com.example.kotlindockertest.exception.TriggerException
 import com.example.kotlindockertest.model.StringErrorResponse
 import org.postgresql.util.PSQLException
 import org.springframework.http.HttpStatus
@@ -59,6 +60,16 @@ class ExceptionHandler {
         return ResponseEntity(
             StringErrorResponse(errorMessage),
             HttpStatus.UNAUTHORIZED,
+        )
+    }
+
+    @ExceptionHandler(TriggerException::class)
+    fun handleTriggerException(ex: TriggerException): ResponseEntity<StringErrorResponse> {
+        val errorMessage = requireNotNull(ex.message) { "Error message can't be null" }
+
+        return ResponseEntity(
+            StringErrorResponse(errorMessage),
+            HttpStatus.BAD_REQUEST,
         )
     }
 }

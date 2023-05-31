@@ -7,15 +7,18 @@ import com.example.kotlindockertest.model.mock.MockDto
 import com.example.kotlindockertest.model.mock.MockRequestDto
 import com.example.kotlindockertest.repository.MockRepository
 import com.example.kotlindockertest.repository.TriggerRepository
+import graphql.parser.Parser
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZonedDateTime
+import javax.swing.text.html.parser.DocumentParser
 
 @Service
 class MockService(
     private val mockRepository: MockRepository,
     private val triggerRepository: TriggerRepository,
     private val randomFieldsValidator: MockRandomFieldsValidator,
+    private val documentParser: Parser,
 ) {
 
     @Transactional(readOnly = true)
@@ -66,6 +69,7 @@ class MockService(
 
     @Transactional
     fun addMock(mock: MockRequestDto, username: String): Long {
+        documentParser.parseDocument(mock.request)
         randomFieldsValidator.validateRandomFields(mock.response)
         val mappedMock = MockDto(
             name = mock.name,
@@ -96,6 +100,8 @@ class MockService(
         if (updatedMock.createdBy != username) {
             throw AuthorizationException()
         }
+
+        documentParser.parseDocument(mock.request)
 
         updatedMock.fillMockData(mock)
 

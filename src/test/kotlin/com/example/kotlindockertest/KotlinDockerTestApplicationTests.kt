@@ -89,6 +89,17 @@ class KotlinDockerTestApplicationTests {
     }
 
     @Test
+    fun test21() {
+        val schema = """
+            query {
+                book
+            }
+        """.trimIndent()
+
+        println(getSchema().replace("\n", "\\n"))
+    }
+
+    @Test
     fun schema() {
         val parser = SchemaParser()
         val str = getSchema()
